@@ -11,30 +11,30 @@ exports.postSignUp = (req, res, next)=>{
      const password = req.body.password;
      const confirmPassword = req.body.confirmPassword;
 
-     // AppUsers.findOne({email : email})
-     //      .then(userDoc=>{
-     //           if(userDoc){
-     //                return console.log("User Already Exist!");
-     //                // return res.redirect("/api/sign-up");
-     //           }
-               bcrypt.hash(password, 12)
-                    .then(hashedPass=>{
-                         const appUser = new AppUsers({
-                              email : email, 
-                              password : hashedPass,
-                              name : name
-                         });
-                         return appUser.save();
-                    })
-                    .then((result)=>{
-                         res.status(201).json({
-                              message: "User Created!", user: result
-                         });
-                         // res.redirect("/");
-                    })
-          // })
-                    .catch(err=>{
-                         console.log(err);
-                    })
+     bcrypt.hash(password, 12)
+          .then(hashedPass=>{
+               const appUser = new AppUsers({
+                    name : name,
+                    email: email,
+                    password: hashedPass
+               })
+               return appUser.save()                   
+          })
+          .then(result=>{
+               res.status(201).json({
+                    message: "Created!", user : result
+               })
+          })
+          .catch(err => console.log(err));
      
+}
+
+exports.getAllUser = (req, res, next)=>{
+     AppUsers.find()
+          .then(result=>{
+               res.status(201).json({
+                    user : result
+               })
+          })
+          .catch(err => console.log(err));
 }

@@ -1,6 +1,7 @@
 const path = require("path");
 const fs = require("fs");
 
+const bodyParser = require('body-parser');
 const express = require("express");
 const mongoose = require("mongoose");
 const session = require("express-session");
@@ -27,6 +28,7 @@ const authRoutes = require("./routes/auth");
 const appUserRoutes = require("./apiRoutes/appUserAuth");
 const adminRoutes = require("./routes/admin");
 
+app.use(bodyParser.json());
 app.use(express.urlencoded({extended : false}));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use("/images", express.static(path.join(__dirname, "images")));
