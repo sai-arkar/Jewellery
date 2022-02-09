@@ -27,10 +27,10 @@ exports.postSignUp = (req, res, next)=>{
                          return appUser.save();
                     })
                     .then((result)=>{
-                         res.status(201).json({
-                              message: "User Created!", user: result
-                         });
-                         // res.redirect("/");
+                         // res.status(201).json({
+                         //      message: "User Created!", user: result
+                         // });
+                         res.redirect("/");
                     })
           })
           .catch(err=>{
