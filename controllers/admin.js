@@ -1,6 +1,6 @@
 const Categories = require("../models/categories");
 const Items = require("../models/items");
-const Users = require("../models/users");
+const Users = require("../models/Users");
 const Roles = require("../models/roles");
 const bcrypt = require("bcryptjs");
 
