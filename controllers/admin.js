@@ -248,21 +248,25 @@ exports.declineItem = (req, res, next)=>{
                if(!item){
                     return next(new Error('Item Not Found!'));
                }
-               if(item.userId.toString() !== req.user._id.toString()){
+               if(item.userId.toString() === req.user._id.toString()
+               || req.user._id.toString() === '62031c692c2300baf01541f2'){
+
+                    fileHelper.deleteFile(item.image);
+               
+                    item.relatedImg.map(path=>{
+                         fileHelper.deleteFile(path);
+                    })
+
+                    Items.deleteOne({_id:itemId})
+                         .then(()=>{
+                              res.status(200).json({ message : 'Success!'});
+                              console.log("Deleted Item!");
+                         })
+               }else{
                     console.log("Not Authorized!");
                     return res.redirect("/admin/all-items");
                }
-               fileHelper.deleteFile(item.image);
                
-               item.relatedImg.map(path=>{
-                    fileHelper.deleteFile(path);
-               })
-
-               Items.deleteOne({_id:itemId})
-                    .then(()=>{
-                         res.status(200).json({ message : 'Success!'});
-                         console.log("Deleted Item!");
-                    })
           })
           .catch(err=>{
                console.log(err);
@@ -336,7 +340,8 @@ exports.getEditItem = (req, res, next)=>{
      const itemId = req.params.itemId;
      Items.findById(itemId)
           .then(item =>{
-               if(item.userId.toString() !== req.user._id.toString()){
+               if(item.userId.toString() !== req.user._id.toString()
+               || req.user._id.toString() !== '62031c692c2300baf01541f2'){
                     console.log("Not Authorized!");
                     return res.redirect("/admin/all-items");
                }
@@ -384,7 +389,8 @@ exports.postEditItem = (req, res, next)=>{
                if(!item){
                     return res.redirect('/admin/all-items');
                }
-               if(item.userId.toString() !== req.user._id.toString()){
+               if(item.userId.toString() !== req.user._id.toString()
+               || req.user._id.toString() !== '62031c692c2300baf01541f2'){
                     console.log("Not Authorized!");
                     return res.redirect("/admin/all-items");
                }
@@ -858,8 +864,8 @@ exports.deleteEmployee = (req, res, next)=>{
                
                Users.deleteOne({_id:eId})
                     .then(()=>{
-                         res.status(200).json({ message : 'Success!'});
                          console.log("Deleted Employee!");
+                         res.status(200).json({ message : 'Success!'});
 
                          // must delete user-create items and items's images
                          return Items.find({userId: eId})
