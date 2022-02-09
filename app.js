@@ -9,7 +9,7 @@ const MongoDBStore = require('connect-mongodb-session')(session);
 
 // const csrfProtection = csrf();
 
-const Users = require("./models/users");
+const Users = require("./models/Users");
 
 const MONGODB_URI = `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@cluster0.hl7kn.mongodb.net/${process.env.MONGO_DEFAULT_DATABASE}?retryWrites=true&w=majority`;
 
