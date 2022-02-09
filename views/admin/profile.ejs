@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/apple-icon.png">
+  <link rel="icon" type="image/png" href="/img/favicon.png">
+  <title>
+    <%= pageTitle %>
+  </title>
+  <!--     Fonts and icons     -->
+  <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,900|Roboto+Slab:400,700" />
+  <!-- Nucleo Icons -->
+  <link href="/css/nucleo-icons.css" rel="stylesheet" />
+  <link href="/css/nucleo-svg.css" rel="stylesheet" />
+  <!-- Font Awesome Icons -->
+  <script src="https://kit.fontawesome.com/42d5adcbca.js" crossorigin="anonymous"></script>
+  <!-- Material Icons -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+  <!-- CSS Files -->
+  <link id="pagestyle" href="/css/material-dashboard.css?v=3.0.0" rel="stylesheet" />
+</head>
+
+<%- include('../includes/navigation.ejs', {user: user}) %>
+  
+  <main class="main-content max-height-vh-100 h-100">
+    <!-- Navbar -->
+    <nav class="navbar navbar-main navbar-expand-lg px-0 mx-4 shadow-none border-radius-xl" id="navbarBlur" navbar-scroll="true">
+      <div class="container-fluid py-1 px-3">
+        <div class="collapse navbar-collapse mt-sm-0 mt-2 me-md-0 me-sm-4" id="navbar">
+        </div>
+      </div>
+    </nav>
+    <!-- End Navbar -->
+    <div class="container-fluid my-3 py-3">
+      <div class="row mb-5">
+        
+        <div class="col-lg-9 mt-lg-0 mt-4">
+          <!-- Card Profile -->
+          <div class="card card-body" id="profile">
+            <div class="row justify-content-center align-items-center">
+           
+              <div class="col-sm-auto col-8 my-auto">
+                <div class="h-100">
+                  <h5 class="mb-1 font-weight-bolder">
+                    <%= User.name %>
+                  </h5>
+                </div>
+              </div>
+              
+            </div>
+          </div>
+          <!-- Card Basic Info -->
+          <div class="card mt-4" id="basic-info">
+            <div class="card-header">
+              <h5>User Info</h5>
+            </div>
+            <div class="card-body pt-0">
+              <div class="row">
+                <div class="col-6">
+                  <div class="input-group input-group-static">
+                    <ul class="list-group">
+
+                      <li class="list-group-item border-0 ps-0 pt-0 text-sm"><strong class="text-dark">Full Name:</strong> &nbsp; <%= User.name %></li>
+
+                      <li class="list-group-item border-0 ps-0 text-sm"><strong class="text-dark">Email:</strong> &nbsp; <a href="/cdn-cgi/l/email-protection" ><%= User.email %></a></li>
+
+                      <li class="list-group-item border-0 ps-0 text-sm"><strong class="text-dark">Role:</strong> &nbsp; <%= User.status %> </li>
+                      
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card mt-4" id="basic-info">
+            <div class="card-header">
+              <h5>Change Info</h5>
+            </div>
+            <div class="card-body pt-0">
+
+              <form action="/admin/profile-info" method="post" autocomplete="off">
+
+                <div class="row">
+                  <div class="col-6">
+                    <div class="input-group input-group-static">
+                      <label>User Name</label>
+                      <input type="text" class="form-control" name="name">
+                    </div>
+                  </div>
+                </div>
+                <div class="row mt-4">
+                  <div class="col-6">
+                    <div class="input-group input-group-static">
+                      <label>Email</label>
+                      <input type="email" class="form-control" name="email" placeholder="example@email.com">
+                    </div>
+                  </div>
+                  <div class="col-6">
+                    <div class="input-group input-group-static">
+                      <label>Confirm Email</label>
+                      <input type="email" class="form-control" name="confirmEmail" placeholder="example@email.com">
+                    </div>
+                  </div>
+                </div>
+                <input type="hidden" name="userId" value="<%= user._id %>">
+                <button type="submit" class="btn bg-gradient-dark btn-sm float-end mt-6 mb-0">Update Info</button>
+
+              </form>
+
+            </div>
+          </div>
+
+          <!-- Card Change Password -->
+          <div class="card mt-4" id="password">
+            <div class="card-header">
+              <h5>Change Password</h5>
+            </div>
+
+            <div class="card-body pt-0">
+
+              <form action="/admin/change-password" method="post">
+
+                <div class="input-group input-group-static">
+                  <label>Current password</label>
+                  <input type="password" class="form-control" name="currentPass">
+                </div>
+  
+                <div class="input-group input-group-static my-4">
+                  <label >New password</label>
+                  <input type="password" class="form-control" name="newPass">
+                </div>
+  
+                <div class="input-group input-group-static mt-4">
+                  <label >Confirm New password</label>
+                  <input type="password" class="form-control" name="confirmPass">
+                </div>
+                
+                <h5 class="mt-5">Password requirements</h5>
+                <p class="text-muted mb-2">
+                  Please follow this guide for a strong password:
+                </p>
+                <ul class="text-muted ps-4 mb-0 float-start">
+                  <li>
+                    <span class="text-sm">One special characters</span>
+                  </li>
+                  <li>
+                    <span class="text-sm">Min 6 characters</span>
+                  </li>
+                  <li>
+                    <span class="text-sm">One number (2 are recommended)</span>
+                  </li>
+                  <li>
+                    <span class="text-sm">Change it often</span>
+                  </li>
+                </ul>
+                <input type="hidden" name="userId" value="<%= user._id %>">
+                <button type="submit" class="btn bg-gradient-dark btn-sm float-end mt-6 mb-0">Update password</button>
+
+              </form>
+
+            </div>
+          </div>
+          <!-- Card Change Password -->
+
+          <!-- Card Delete Account -->
+          <div class="card mt-4" id="delete">
+            <div class="card-body">
+              <div class="d-flex align-items-center mb-sm-0 mb-4">
+                <div class="w-50">
+                  <h5>Delete Account</h5>
+                  <p class="text-sm mb-0">Once you delete your account, there is no going back. Please be certain.</p>
+                </div>
+                <div class="w-50 text-end">
+
+                  <form action="/admin/delete-account" method="post">
+                    
+                    <input type="hidden" name="userId" value="<%= user._id %>">
+                    <button type="submit" class="btn bg-gradient-danger mb-0 ms-2" name="button">Delete Account</button>
+
+                  </form>
+
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    
+    </div>
+
+  </main>
+  
+  <!--   Core JS Files   -->
+  <%- include('../includes/end.ejs') %>

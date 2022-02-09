@@ -1,0 +1,122 @@
+<%- include('../includes/head.ejs') %>
+
+<%- include('../includes/navigation.ejs', {user: user}) %>
+
+<main class="main-content position-relative max-height-vh-100 h-100 border-radius-lg ">
+    <!-- Navbar -->
+    <nav class="navbar navbar-main navbar-expand-lg px-0 mx-4 shadow-none border-radius-xl" id="navbarBlur" navbar-scroll="true">
+      <div class="container-fluid py-1 px-3">
+        <div class="collapse navbar-collapse mt-sm-0 mt-2 me-md-0 me-sm-4" id="navbar">
+        </div>
+      </div>
+    </nav>
+    <!-- End Navbar -->
+  <!-- End Navbar -->
+  <div class="container-fluid py-4">
+    <div class="row">
+      <div class="col-12">
+        <div class="multisteps-form mb-9">
+          <!--progress bar-->
+          <div class="row">
+            <div class="col-12 col-lg-8 mx-auto my-5">
+            </div>
+          </div>
+          <!--form panels-->
+          <div class="row">
+            <div class="col-12 col-lg-8 m-auto">
+              <div class="card">
+                <div class="card-header p-0 position-relative mt-n4 mx-3 z-index-2">
+                  <div class="bg-gradient-primary shadow-primary border-radius-lg pt-4 pb-3">
+                    <div class="multisteps-form__progress">
+                      <h4 class="text-white font-weight-bolder text-center mt-2 mb-0"><%if(editing){%>Edit Employee<%}else{%>Add Employee<%}%></h4>
+                    </div>
+                  </div>
+                </div>
+                <div class="card-body">
+
+                  <form action="/admin/<%if(editing){%>edit-employee<%}else{%>add-employee<%}%>" method="post" class="multisteps-form__form">
+                    <!--single form panel-->
+                    <div class="multisteps-form__panel border-radius-xl bg-white js-active" data-animation="FadeIn">
+                      <h5 class="font-weight-bolder mb-0">About Employee</h5>
+                      <p class="mb-0 text-sm">Mandatory informations</p>
+                      <div class="multisteps-form__content">
+                        <div class="row mt-3">
+                          <div class="col-12 col-sm-6">
+                            <div class="input-group input-group-static">
+                              <label >Name</label>
+                              <input 
+                                class="multisteps-form__input form-control" 
+                                type="text" 
+                                name="name" value="<%if(editing){%><%= employee.name %><%}%>" />
+                            </div>
+                          </div>
+                          <div class="col-12 col-sm-6 mt-3 mt-sm-0">
+                            <div class="input-group input-group-static">
+                              <select class="form-select" aria-label="Default select example" name="roleTitle">
+                                <% if(roles.length > 0){ %>
+                                     <% for(let role of roles){ %>
+                                       <option value="<%= role.title %>" ><%= role.title %></option>
+                                       <% } %>
+                                <% }else{ %>
+                                     <option value="">No role Yet</option>
+                                 <% } %>
+                              </select>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="row mt-3">
+                          <div class="col-12 col-sm-6">
+                            <div class="input-group input-group-static">
+                              <label >Email Address</label>
+                              <input 
+                                class="multisteps-form__input form-control" 
+                                type="text" 
+                                name="email" value="<%if(editing){%><%= employee.email %><%}%>"/>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="row mt-3">
+                          <div class="col-12 col-sm-6">
+                            <div class="input-group input-group-static">
+                              <label >Password</label>
+                              <input 
+                              class="multisteps-form__input form-control" 
+                              type="password" 
+                              name="password"/>
+                            </div>
+                          </div>
+                          <div class="col-12 col-sm-6 mt-3 mt-sm-0">
+                            <div class="input-group input-group-static">
+                              <label >Repeat Password</label>
+                              <input 
+                              class="multisteps-form__input form-control" 
+                              type="password" 
+                              name="confirmPassword"/>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="button-row d-flex mt-4">
+                          <%if(editing){%>
+                            <input type="hidden" name="eId" value="<%= employee._id %>">
+                          <%}%>
+                          <button class="btn bg-gradient-dark ms-auto mb-0 js-btn-next" type="submit" title="Next"><% if(editing){%>Update<%}else{%>Add<%}%></button>
+                        </div>
+                      </div>
+                    </div>
+                    <!--single form panel-->
+                   
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+  <!--   Core JS Files   -->
+  <script src="/js/delete-role.js"></script>
+  
+  <%- include('../includes/end.ejs') %>

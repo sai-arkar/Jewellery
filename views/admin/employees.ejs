@@ -1,0 +1,77 @@
+<%- include('../includes/head.ejs') %>
+
+<%- include('../includes/navigation.ejs', {user: user}) %>
+
+  <main class="main-content position-relative max-height-vh-100 h-100 border-radius-lg ">
+    <!-- Navbar -->
+    <nav class="navbar navbar-main navbar-expand-lg px-0 mx-4 shadow-none border-radius-xl" id="navbarBlur" navbar-scroll="true">
+      <div class="container-fluid py-1 px-3">
+        <div class="collapse navbar-collapse mt-sm-0 mt-2 me-md-0 me-sm-4" id="navbar">
+        </div>
+      </div>
+    </nav>
+    <!-- End Navbar -->
+    <div class="container-fluid py-4">
+      <div class="row">
+        <div class="col-md-6">
+          <div class="card my-4">
+            <div class="card-header p-0 position-relative mt-n4 mx-3 z-index-2">
+              <div class="bg-gradient-primary shadow-primary border-radius-lg pt-4 pb-3">
+                <h6 class="text-white text-capitalize ps-3">Employees table</h6>
+              </div>
+            </div>
+            <div class="card-body px-0 pb-2">
+              <div class="table-responsive p-0">
+                
+                <% if(users.length > 0){ %>
+                <table class="table align-items-center mb-0">
+                  <thead>
+                    <tr>
+                      <th class="align-middle text-center text-uppercase text-secondary font-weight-bolder opacity-7">Name</th>
+                      <th class="align-middle text-center text-uppercase text-secondary font-weight-bolder opacity-7">Role</th>
+                      <th class="align-middle text-center text-uppercase text-secondary font-weight-bolder opacity-7">Options</th>
+                    </tr>
+                  </thead>
+
+                  <tbody>
+                    <% for(let user of users){ %>
+                        <tr>
+                          <td class="align-middle text-center">
+                            <div class="d-flex px-2 py-1">
+                                <p class="text-primary font-weight-bold mb-0"><%= user.name %></p>
+                            </div>
+                          </td>
+                          <td style="text-align:center">
+                            <div class="d-flex px-2 py-1">
+                                <p class="text-secondary font-weight-bold mb-0"><%= user.status %></p>
+                            </div>
+                          </td>
+                          <% if(user.status != "super"){ %>
+                            <td class="align-middle text-center">
+                              <a class="btn bg-gradient-success w-40 my-2 mb-2" href="/admin/edit-employee/<%=user._id%>?edit=true" class="btn bg-gradient-success w-40 my-4 mb-2">
+                                Update
+                              </a>
+                              <input type="hidden" value="<%= user._id %>" name="userId">
+                              <button type="button" class="btn bg-gradient-primary w-40 my-2 mb-2" onclick="deleteEmployee(this)">Delete</button>
+                            </td>
+                          <% } %>
+                          
+                        </tr>
+                    <% } %>
+                  </tbody>
+                </table>
+                <% }else{ %>
+                  <h3 class="text-primary text-capitalize ps-3">No Categories</h3>
+                <% } %>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!--   Core JS Files   -->
+  <script src="/js/delete-employee.js"></script>
+  
+  <%- include('../includes/end.ejs') %>
