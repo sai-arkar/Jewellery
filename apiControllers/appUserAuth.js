@@ -11,12 +11,12 @@ exports.postSignUp = (req, res, next)=>{
      const password = req.body.password;
      const confirmPassword = req.body.confirmPassword;
 
-     AppUsers.findOne({email : email})
-          .then(userDoc=>{
-               if(userDoc){
-                    return console.log("User Already Exist!");
-                    // return res.redirect("/api/sign-up");
-               }
+     // AppUsers.findOne({email : email})
+     //      .then(userDoc=>{
+     //           if(userDoc){
+     //                return console.log("User Already Exist!");
+     //                // return res.redirect("/api/sign-up");
+     //           }
                bcrypt.hash(password, 12)
                     .then(hashedPass=>{
                          const appUser = new AppUsers({
@@ -27,14 +27,14 @@ exports.postSignUp = (req, res, next)=>{
                          return appUser.save();
                     })
                     .then((result)=>{
-                         // res.status(201).json({
-                         //      message: "User Created!", user: result
-                         // });
-                         res.redirect("/");
+                         res.status(201).json({
+                              message: "User Created!", user: result
+                         });
+                         // res.redirect("/");
                     })
-          })
-          .catch(err=>{
-               console.log(err);
-          })
+          // })
+                    .catch(err=>{
+                         console.log(err);
+                    })
      
 }
