@@ -66,7 +66,9 @@ exports.getUser = (req, res, next)=>{
                     return res.status(401).json({ message : "User Not Found!"});
                }
                res.status(200).json({
-                    user: user
+                    userId: user._id,
+                    name: user.name,
+                    email: user.email
                })
           })
           .catch(err =>{
