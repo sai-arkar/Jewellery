@@ -1,11 +1,14 @@
 const path = require("path");
 const fs = require("fs");
 
+const cors = require("cors");
+const { createProxyMiddleware } = require('http-proxy-middleware');
 const bodyParser = require('body-parser');
 const express = require("express");
 const mongoose = require("mongoose");
 const session = require("express-session");
 const MongoDBStore = require('connect-mongodb-session')(session);
+
 // const csrf = require("csurf");
 
 // const csrfProtection = csrf();
@@ -27,6 +30,8 @@ app.set("views", "views");
 const authRoutes = require("./routes/auth");
 const appUserRoutes = require("./apiRoutes/appUserAuth");
 const adminRoutes = require("./routes/admin");
+
+app.use(cors());
 
 app.use(bodyParser.json());
 app.use(express.urlencoded({extended : false}));
@@ -76,6 +81,16 @@ app.use((req, res, next) => {
 //      next();
 // })
 
+
+// app.use('/api', createProxyMiddleware({ 
+//      target: 'http://localhost:8080/', //original url
+//      changeOrigin: true, 
+//      //secure: false,
+//      onProxyRes: function (proxyRes, req, res) {
+//         proxyRes.headers['Access-Control-Allow-Origin'] = '*';
+//      }
+//  }));
+ 
 app.use('/admin', adminRoutes);
 app.use(authRoutes);
 app.use('/api',appUserRoutes);
@@ -83,7 +98,7 @@ app.use('/api',appUserRoutes);
 mongoose.connect(MONGODB_URI)
      .then(()=>{
           console.log("Connected!");
-          app.listen(process.env.PORT || 3000);
+          app.listen(process.env.PORT || 8080);
      })
      .catch(err=>{
           console.log(err);
