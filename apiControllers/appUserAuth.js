@@ -11,35 +11,21 @@ exports.postSignUp = (req, res, next)=>{
      const password = req.body.password;
      const confirmPassword = req.body.confirmPassword;
 
-     const appUser = new AppUsers({
-          name : name,
-          email: email,
-          password: password
-     })
-     appUser.save()
+     bcrypt.hash(password, 12)
+          .then(hashedPass=>{
+               const appUser = new AppUsers({
+                    name : name,
+                    email: email,
+                    password: hashedPass
+               })
+               return appUser.save()                   
+          })
           .then(result=>{
                res.status(201).json({
                     message: "Created!", user : result
                })
           })
           .catch(err => console.log(err));
-
-
-     // bcrypt.hash(password, 12)
-     //      .then(hashedPass=>{
-     //           const appUser = new AppUsers({
-     //                name : name,
-     //                email: email,
-     //                password: hashedPass
-     //           })
-     //           return appUser.save()                   
-     //      })
-     //      .then(result=>{
-     //           res.status(201).json({
-     //                message: "Created!", user : result
-     //           })
-     //      })
-     //      .catch(err => console.log(err));
      
 }
 

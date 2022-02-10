@@ -72,25 +72,6 @@ app.use((req, res, next) => {
        });
    });
 
-
-// app.use((req, res, next)=>{
-//      res.setHeader('Access-Control-Allow-Origin', '*');
-//      res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
-//      res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-//      res.setHeader('Access-Control-Allow-Credentials', true);
-//      next();
-// })
-
-
-// app.use('/api', createProxyMiddleware({ 
-//      target: 'http://localhost:8080/', //original url
-//      changeOrigin: true, 
-//      //secure: false,
-//      onProxyRes: function (proxyRes, req, res) {
-//         proxyRes.headers['Access-Control-Allow-Origin'] = '*';
-//      }
-//  }));
- 
 app.use('/admin', adminRoutes);
 app.use(authRoutes);
 app.use('/api',appUserRoutes);
