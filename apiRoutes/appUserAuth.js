@@ -8,7 +8,9 @@ router.get("/sign-up", apiControllers.getSignup);
 
 router.post("/sign-up", apiControllers.postSignUp);
 
-router.post("/login", apiControllers.postLogin);;
+router.post("/login", apiControllers.postLogin);
+
+router.get("/user/:uid", apiControllers.getUser);
 
 router.get("/all-user", apiControllers.getAllUser);
 

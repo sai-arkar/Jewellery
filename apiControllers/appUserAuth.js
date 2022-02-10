@@ -58,6 +58,22 @@ exports.postLogin = (req, res, next)=>{
 }
 
 
+exports.getUser = (req, res, next)=>{
+     const uId = req.params.uid;
+     AppUsers.findById(uId)
+          .then(user=>{
+               if(!user){
+                    return res.status(401).json({ message : "User Not Found!"});
+               }
+               res.status(200).json({
+                    user: user
+               })
+          })
+          .catch(err =>{
+               console.log(err);
+          });
+}
+
 exports.getAllUser = (req, res, next)=>{
      AppUsers.find()
           .then(result=>{
