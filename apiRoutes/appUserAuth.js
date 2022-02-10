@@ -10,11 +10,11 @@ router.post("/sign-up", apiControllers.postSignUp);
 
 router.post("/login", apiControllers.postLogin);
 
-/* Get User */
+/* Get User and user's items */
 router.get("/user/:uid", apiControllers.getUser);
 
-/* Get User's Items */
-router.get("/items/:uid", apiControllers.getUserItems);
+/* Get All User's Id */
+router.get("/all-uId", apiControllers.getAllUserId);
 
 router.get("/all-user", apiControllers.getAllUser);
 

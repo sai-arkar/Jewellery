@@ -83,17 +83,18 @@ exports.getUser = (req, res, next)=>{
           });
 }
 
-exports.getUserItems = (req, res, next)=>{
-     const uId = req.params.uid;
-     Items.find({userId: uId})
-          .then(items=>{
+exports.getAllUserId = (req, res, next)=>{
+     let userId = [];
+     AppUsers.find()
+          .then(users=>{
+               users.map(user=>{
+                    userId.push(user._id.toString());
+               })
                res.status(200).json({
-                    items: items
+                    result : userId
                })
           })
-          .catch(err=>{
-               console.log(err);
-          })
+          .catch(err => console.log(err));
 }
 
 exports.getAllUser = (req, res, next)=>{
