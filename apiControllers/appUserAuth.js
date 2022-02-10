@@ -1,4 +1,6 @@
 const AppUsers = require( "../models/appUsers" );
+const Items = require("../models/items");
+
 const bcrypt = require("bcryptjs");
 
 exports.getSignup = (req, res, next)=>{
@@ -74,6 +76,19 @@ exports.getUser = (req, res, next)=>{
           .catch(err =>{
                console.log(err);
           });
+}
+
+exports.getUserItems = (req, res, next)=>{
+     const uId = req.params.uid;
+     Items.find({userId: uId})
+          .then(items=>{
+               res.status(200).json({
+                    items: items
+               })
+          })
+          .catch(err=>{
+               console.log(err);
+          })
 }
 
 exports.getAllUser = (req, res, next)=>{
