@@ -28,8 +28,9 @@ app.set("view engine", "ejs");
 app.set("views", "views");
 
 const authRoutes = require("./routes/auth");
-const appUserRoutes = require("./apiRoutes/appUserAuth");
 const adminRoutes = require("./routes/admin");
+const appUserRoutes = require("./apiRoutes/appUserAuth");
+const appUserPost = require("./apiRoutes/appUserPost");
 
 app.use(cors());
 
@@ -74,7 +75,8 @@ app.use((req, res, next) => {
 
 app.use('/admin', adminRoutes);
 app.use(authRoutes);
-app.use('/api',appUserRoutes);
+app.use('/api', appUserRoutes);
+app.use('/api', appUserPost);
 
 mongoose.connect(MONGODB_URI)
      .then(()=>{
