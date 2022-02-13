@@ -70,9 +70,11 @@ exports.getUser = (req, res, next)=>{
                Items.find({userId: uId})
                     .then(items=>{
                          res.status(200).json({
-                              userId: user._id,
-                              name: user.name,
-                              email: user.email,
+                              info:{
+                                   userId: user._id,
+                                   name: user.name,
+                                   email: user.email,
+                              },
                               items: items
                          })
                     })

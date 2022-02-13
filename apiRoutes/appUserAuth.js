@@ -4,11 +4,11 @@ const router = express.Router();
 
 const apiControllers = require("../apiControllers/appUserAuth");
 
-router.get("/sign-up", apiControllers.getSignup);
+router.get("/auth/sign-up", apiControllers.getSignup);
 
-router.post("/sign-up", apiControllers.postSignUp);
+router.post("/auth/sign-up", apiControllers.postSignUp);
 
-router.post("/login", apiControllers.postLogin);
+router.post("/auth/login", apiControllers.postLogin);
 
 /* Get User and user's items */
 router.get("/user/:uid", apiControllers.getUser);
