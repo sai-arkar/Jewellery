@@ -2,6 +2,7 @@
      "env":{
           "MONGO_USER": "root",
           "MONGO_PASSWORD": "root",
-          "MONGO_DEFAULT_DATABASE": "Jewellery"
+          "MONGO_DEFAULT_DATABASE": "Jewellery",
+          "SG_API": "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"
      }
 }

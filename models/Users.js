@@ -17,7 +17,10 @@ const userSchema = new Schema({
      },
      status: {
           type: String
-     }
+     },
+     resetToken: String,
+     resetTokenExpiration: Date,
+   
       
 });
 

@@ -33,21 +33,29 @@
                   </div>
                 </div>
                 <div class="card-body">
+                  
+                  
 
-                  <form action="/admin/<%if(editing){%>edit-employee<%}else{%>add-employee<%}%>" method="post" class="multisteps-form__form">
+                  <form action="/admin/<%if(editing){%>edit-employee<%}else{%>add-employee<%}%>" method="post" class="multisteps-form__form ">
                     <!--single form panel-->
                     <div class="multisteps-form__panel border-radius-xl bg-white js-active" data-animation="FadeIn">
                       <h5 class="font-weight-bolder mb-0">About Employee</h5>
                       <p class="mb-0 text-sm">Mandatory informations</p>
+                      
+                      <% if(errorMessage){ %>
+                        <div class="text-primary text-gradient font-weight-bold"><%= errorMessage %></div>
+                      <% } %>
+
                       <div class="multisteps-form__content">
                         <div class="row mt-3">
                           <div class="col-12 col-sm-6">
-                            <div class="input-group input-group-static">
+                            <div class="input-group input-group-static " >
                               <label >Name</label>
                               <input 
-                                class="multisteps-form__input form-control" 
+                                class="multisteps-form__input form-control <%= validationErrors.find(e => e.param ==='name')? 'text-danger' : '' %>" 
                                 type="text" 
-                                name="name" value="<%if(editing){%><%= employee.name %><%}%>" />
+                                name="name" value="<%if(editing){%><%= employee.name %><%}else{%><%= oldInput.name %><%}%>"
+                                />
                             </div>
                           </div>
                           <div class="col-12 col-sm-6 mt-3 mt-sm-0">
@@ -66,32 +74,35 @@
                         </div>
                         <div class="row mt-3">
                           <div class="col-12 col-sm-6">
+                            
                             <div class="input-group input-group-static">
                               <label >Email Address</label>
                               <input 
-                                class="multisteps-form__input form-control" 
+                                class="multisteps-form__input form-control <%= validationErrors.find(e => e.param ==='email')? 'text-danger font-weight-bold' : '' %>" 
                                 type="text" 
-                                name="email" value="<%if(editing){%><%= employee.email %><%}%>"/>
+                                name="email" value="<%if(editing){%><%= employee.email %><%}else{%><%= oldInput.email%><%}%>"/>
                             </div>
                           </div>
                         </div>
                         <div class="row mt-3">
                           <div class="col-12 col-sm-6">
+                            
                             <div class="input-group input-group-static">
                               <label >Password</label>
                               <input 
-                              class="multisteps-form__input form-control" 
+                              class="multisteps-form__input form-control <%= validationErrors.find(e => e.param ==='password')? 'text-danger font-weight-bold' : '' %>" 
                               type="password" 
-                              name="password"/>
+                              name="password" value="<%= oldInput.password %>"
+                              />
                             </div>
                           </div>
                           <div class="col-12 col-sm-6 mt-3 mt-sm-0">
                             <div class="input-group input-group-static">
                               <label >Repeat Password</label>
                               <input 
-                              class="multisteps-form__input form-control" 
+                              class="multisteps-form__input form-control <%= validationErrors.find(e => e.param ==='confirmPassword')? 'text-danger font-weight-bold' : '' %>" 
                               type="password" 
-                              name="confirmPassword"/>
+                              name="confirmPassword" value="<%= oldInput.confirmPassword %>"/>
                             </div>
                           </div>
                         </div>

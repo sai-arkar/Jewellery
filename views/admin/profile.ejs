@@ -116,50 +116,24 @@
           <!-- Card Change Password -->
           <div class="card mt-4" id="password">
             <div class="card-header">
-              <h5>Change Password</h5>
+              <h5>Reset Password</h5>
             </div>
 
             <div class="card-body pt-0">
 
-              <form action="/admin/change-password" method="post">
+              <a href="/reset" class="btn bg-gradient-dark btn-sm float-end mt-6 mb-0">Reset Password</a>
+              <!-- <form action="/reset" method="post">
 
-                <div class="input-group input-group-static">
-                  <label>Current password</label>
-                  <input type="password" class="form-control" name="currentPass">
-                </div>
-  
-                <div class="input-group input-group-static my-4">
-                  <label >New password</label>
-                  <input type="password" class="form-control" name="newPass">
-                </div>
   
                 <div class="input-group input-group-static mt-4">
-                  <label >Confirm New password</label>
-                  <input type="password" class="form-control" name="confirmPass">
+                  <label >E-Mail</label>
+                  <input type="email" class="form-control" name="email">
                 </div>
                 
-                <h5 class="mt-5">Password requirements</h5>
-                <p class="text-muted mb-2">
-                  Please follow this guide for a strong password:
-                </p>
-                <ul class="text-muted ps-4 mb-0 float-start">
-                  <li>
-                    <span class="text-sm">One special characters</span>
-                  </li>
-                  <li>
-                    <span class="text-sm">Min 6 characters</span>
-                  </li>
-                  <li>
-                    <span class="text-sm">One number (2 are recommended)</span>
-                  </li>
-                  <li>
-                    <span class="text-sm">Change it often</span>
-                  </li>
-                </ul>
                 <input type="hidden" name="userId" value="<%= user._id %>">
-                <button type="submit" class="btn bg-gradient-dark btn-sm float-end mt-6 mb-0">Update password</button>
+                <button type="submit" class="btn bg-gradient-dark btn-sm float-end mt-6 mb-0">Reset Password</button>
 
-              </form>
+              </form> -->
 
             </div>
           </div>

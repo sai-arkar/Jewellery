@@ -7,7 +7,7 @@
   <link rel="apple-touch-icon" sizes="76x76" href="/css/img/apple-icon.png">
   <link rel="icon" type="image/png" href="/css/img/favicon.png">
   <title>
-    Material Dashboard 2 by Creative Tim
+    <%= pageTitle %>
   </title>
   <!--     Fonts and icons     -->
   <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,900|Roboto+Slab:400,700" />
@@ -108,17 +108,26 @@
                 </div>
               </div>
               <div class="card-body">
-
-                <form role="form" action="/sign-in" method="post" class="text-start" autocomplete="off">
+                <% if(errorMessage){ %>
+                  <div class="text-primary text-gradient font-weight-bold"><%= errorMessage %></div>
+                <% } %>
+                <form role="form" action="/" method="post" class="text-start" autocomplete="off" novalidate="true">
 
                   <div class="input-group input-group-static my-3">
                     <label >Email</label>
-                    <input type="email" class="form-control" name="email">
+                    <input 
+                      type="email" 
+                      class="form-control <%= validationErrors.find(e => e.param ==='email')? 'text-danger font-weight-bold' : '' %>" name="email"
+                      value="<%= oldInput.email%>">
                   </div>
 
                   <div class="input-group input-group-static mb-3">
                     <label >Password</label>
-                    <input type="password" class="form-control" name="password">
+                    <input 
+                      type="password" 
+                      class="form-control <%= validationErrors.find(e => e.param ==='password')? 'text-danger font-weight-bold' : '' %>" 
+                      name="password" 
+                      value="<%= oldInput.email%>">
                   </div>
 
                   <div class="form-check form-switch d-flex align-items-center mb-3">

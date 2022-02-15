@@ -3,11 +3,17 @@ const Items = require("../models/items");
 const Users = require("../models/Users");
 const Roles = require("../models/roles");
 const bcrypt = require("bcryptjs");
+const { validationResult } = require("express-validator");
+
+const sgMail = require('@sendgrid/mail')
+sgMail.setApiKey("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")
 
 const fileHelper = require("../middleware/file");
 const mongoose = require( "mongoose" );
 
 let relatedImageArr = [];
+let roleForUse = [];
+let test;
 
 exports.getAdminDashborad = (req, res, next)=>{
      if(!req.user){
@@ -713,12 +719,24 @@ exports.getAddEmployee = (req, res, next)=>{
 
      Roles.find()
           .then(result=>{
+               test = result
+               roleForUse = new Array();
+               result.map(role=>{
+                    roleForUse.push(role);
+               })
                res.render("admin/add-employee", {
                     pageTitle : 'Add Employee',
                     editing : false,
                     user : req.user.name,
                     path: '/admin/add-employee',
-                    roles: result
+                    roles: result,
+                    errorMessage: false,
+                    oldInput: {
+                         email: '',
+                         password: '',
+                         confirmPassword: ''
+                    },
+                    validationErrors: []
                });
           })
           .catch(err=>{
@@ -730,29 +748,60 @@ exports.postAddEmployee = (req, res, next)=>{
      const name = req.body.name;
      const email = req.body.email;
      const password = req.body.password;
-     const confirmPass = req.body.confirmPassword;
      const roleTitle = req.body.roleTitle;
 
-     Users.findOne({email: email})
-          .then(userDoc=>{
-               if(userDoc){
-                    console.log("Employee Already Exist!");
-                    return res.redirect('/admin/add-employee');
-               }
-               bcrypt.hash(password, 12)
-                    .then(hashedPass=>{
-                         const employee = new Users({
-                              name,
-                              email,
-                              password: hashedPass,
-                              status: roleTitle
-                         });
-                         return employee.save();
-                    })
-                    .then(()=>{
-                         console.log("Created Employee");
-                         res.redirect('/admin/add-employee');
-                    })
+     const errors = validationResult(req);
+     console.log(email);
+     if(!errors.isEmpty()){
+          return res.status(422).render("admin/add-employee",{
+               pageTitle: "Add Employee",
+               errorMessage: errors.array()[0].msg,
+               editing : false,
+               user : req.user.name,
+               path: '/admin/add-employee',
+               roles: roleForUse,
+               oldInput: {
+                    name: name,
+                    email: email,
+                    password: password,
+                    confirmPassword: req.body.confirmPassword
+               },
+               validationErrors: errors.array()
+          });
+     }
+               
+     bcrypt.hash(password, 12)
+          .then(hashedPass=>{
+               const employee = new Users({
+                    name,
+                    email,
+                    password: hashedPass,
+                    status: roleTitle
+               });
+               return employee.save();
+          })
+          .then(()=>{
+               console.log("Created Employee");
+               res.redirect('/admin/add-employee');
+               const msg = {
+                    to: req.body.email, // Change to your recipient
+                    from: 'saiscript.digit@gmail.com', // Change to your verified sender
+                    subject: "Welcome To National Cyber City",
+                    html: `
+                         <h1>Now, You Can Use National Cyber City's App</h1>
+                         <h3>Click this <a href="http://localhost:8080/">link</h3> 
+                         `
+                  };
+
+               sgMail
+                  .send(msg)
+                  .then((response) => {
+                    console.log(response[0].statusCode)
+                    console.log(response[0].headers)
+                  })
+                  .catch((error) => {
+                    console.error(error)
+                  })
           })
           .catch(err=>{
                console.log(err);
@@ -805,7 +854,15 @@ exports.getEditEmployee = (req, res, next)=>{
                                    user : req.user.name,
                                    path: '/admin/add-employee',
                                    employee : result,
-                                   roles: roles
+                                   roles: roles,
+                                   errorMessage: false,
+                                   oldInput: {
+                                        name: '',
+                                        email: '',
+                                        password: '',
+                                        confirmPassword: ''
+                                   },
+                                   validationErrors: []
                               })
                          })
                }else{
