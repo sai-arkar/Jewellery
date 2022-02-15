@@ -789,7 +789,7 @@ exports.postAddEmployee = (req, res, next)=>{
                     subject: "Welcome To National Cyber City",
                     html: `
                          <h1>Now, You Can Use National Cyber City's App</h1>
-                         <h3>Click this <a href="http://localhost:8080/">link</h3> 
+                         <h3>Click this <a href="http://jewelry-third-step.herokuapp.com/">link</h3> 
                          `
                   };
 
