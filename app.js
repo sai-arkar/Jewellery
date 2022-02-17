@@ -8,6 +8,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const session = require("express-session");
 const MongoDBStore = require('connect-mongodb-session')(session);
+const socket = require("socket.io");
 
 // const csrf = require("csurf");
 
@@ -78,10 +79,43 @@ app.use(authRoutes);
 app.use('/api', appUserRoutes);
 app.use('/api', appUserPost);
 
+const Comment = require("./models/comments");
+
+app.post('/admin/comments', (req, res, next)=>{
+     const comment = new Comment({
+          userId: req.user,
+          name: req.user.name,
+          comment: req.body.comment
+     });
+     comment.save().then(response =>{
+          res.send(response)
+     })
+})
+
+app.get("/admin/comments", (req, res)=>{
+     Comment.find()
+          .then(comments=>{
+               res.send(comments);
+          })
+})
+
 mongoose.connect(MONGODB_URI)
      .then(()=>{
           console.log("Connected!");
-          app.listen(process.env.PORT || 8080);
+          const server = app.listen(process.env.PORT || 8080);
+          let io = require("./socket").init(server);
+          io.on('connection', (socket) => {
+               console.log("Client Connected");
+
+               socket.on('comment', (data) => {
+                   data.time = Date()
+                   socket.broadcast.emit('comment', data)
+               })
+           
+               socket.on('typing', (data) => {
+                   socket.broadcast.emit('typing', data) 
+               })
+           })
      })
      .catch(err=>{
           console.log(err);

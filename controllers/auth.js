@@ -3,8 +3,10 @@ const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
 const { validationResult } = require("express-validator");
 
-const sgMail = require('@sendgrid/mail')
-sgMail.setApiKey("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")
+const sgMail = require('@sendgrid/mail');
+sgMail.setApiKey("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");
+
+let showInfo = false
 
 exports.getSignin = (req, res, next)=>{
      res.render("auth/sign-in", {
@@ -14,43 +16,10 @@ exports.getSignin = (req, res, next)=>{
                email: '',
                password: ''
           },
-          validationErrors: []
+          validationErrors: [],
+          showInfo: showInfo
      });
 }
-
-// exports.getSignup = (req, res, next)=>{
-//      res.render("auth/sign-up");
-// }
-
-// exports.postSignUp = (req, res, next)=>{
-//      const name = req.body.name;
-//      const email = req.body.email;
-//      const password = req.body.password;
-//      const confirmPassword = req.body.confirmPassword;
-
-//      Users.findOne({email : email})
-//           .then(userDoc=>{
-//                if(userDoc){
-//                     return res.redirect("/sign-up");
-//                }
-//                bcrypt.hash(password, 12)
-//                     .then(hashedPass=>{
-//                          const user = new Users({
-//                               email : email, 
-//                               password : hashedPass,
-//                               name : name
-//                          });
-//                          return user.save();
-//                     })
-//                     .then(()=>{
-//                          res.redirect("/");
-//                     })
-//           })
-//           .catch(err=>{
-//                console.log(err);
-//           })
-     
-// }
 
 exports.postSignIn = (req, res, next)=>{
      const email = req.body.email;
@@ -65,7 +34,8 @@ exports.postSignIn = (req, res, next)=>{
                     email: email,
                     password: password
                },
-               validationErrors: errors.array()
+               validationErrors: errors.array(),
+               showInfo: showInfo
           });
      }
 
@@ -74,16 +44,20 @@ exports.postSignIn = (req, res, next)=>{
                if(!user){
                     return res.status(422).render("auth/sign-in",{
                          pageTitle: "Sign In",
-                         errorMessage: "Invalid Email or Password", 
+                         errorMessage: "Please enter a valid email address", 
                          oldInput: {
                               email: email,
                               password: password
                          },
-                         validationErrors: []
+                         validationErrors: errors.array(),
+                         showInfo: showInfo
                     })
                }
                bcrypt.compare(password, user.password)
                     .then(doMatch=>{
+
+                         showInfo = false;
+
                          if(doMatch){
                               req.session.isLoggedIn = true;
                               if(user.status === 'super'){
@@ -98,17 +72,15 @@ exports.postSignIn = (req, res, next)=>{
                          }
                          return res.status(422).render("auth/sign-in", {
                               pageTitle: "Sign In",
-                              errorMessage: "Invalid Email or Password", 
+                              errorMessage: "Incorret Password", 
                               oldInput: {
                                    email: email,
                                    password: password
                               },
-                              validationErrors: []
+                              validationErrors: errors.array(),
+                              showInfo: showInfo,
+                              red: true
                          })
-                    })
-                    .catch(err=>{
-                         console.log(err);
-                         res.redirect("/");
                     })
           })
           .catch(err=>{
@@ -116,6 +88,7 @@ exports.postSignIn = (req, res, next)=>{
           })
 }
 
+/* Session Destroy */
 exports.postLogOut = (req, res, next)=>{
      req.session.destroy((err)=>{
           console.log(err);
@@ -125,11 +98,29 @@ exports.postLogOut = (req, res, next)=>{
 
 exports.getReset = (req, res, next)=>{
      res.render("auth/reset",{
-          pageTitle: "Reset Password"
+          pageTitle: "Reset Password",
+          oldInput: {
+               email: ''
+          },
+          validationErrors: [],
+          errorMessage: false
      });
 }
 
 exports.postReset = (req, res, next)=>{
+     const errors = validationResult(req);
+
+     if(!errors.isEmpty()){
+          return res.status(422).render("auth/reset",{
+               pageTitle: "Reset Password",
+               errorMessage: errors.array()[0].msg,
+               oldInput:{
+                    email: req.body.email
+               },
+               validationErrors: errors.array()
+          });
+     }
+
      crypto.randomBytes(32, (err, buffer)=>{
           if(err){
                console.log(err);
@@ -147,6 +138,7 @@ exports.postReset = (req, res, next)=>{
                     return user.save();
                })
                .then(result =>{
+                    showInfo = true;
                     res.redirect("/");
                     const msg = {
                          to: req.body.email, // Change to your recipient
@@ -154,7 +146,7 @@ exports.postReset = (req, res, next)=>{
                          subject: 'Password Reset',
                          html: `
                               <h1>You requested a password reset</h1>
-                              <h3>Click this <a href="https://jewelry-third-step.herokuapp.com/reset/${token}">link</h3> to set a new password!</p>
+                              <h3>Click this <a href="http://localhost:8080/reset/${token}">link</h3> to set a new password!</p>
                               `
                        };
 
@@ -178,10 +170,18 @@ exports.getNewPassword = (req, res, next)=>{
      const token = req.params.token;
      Users.findOne({resetToken: token, resetTokenExpiration: {$gt: Date.now()}})
           .then(user=>{
+               
                res.render('auth/new-password', {
                     pageTitle: "New Password", 
                     userId: user._id.toString(),
-                    passwordToken: token
+                    passwordToken: token,
+                    errorMessage: false,
+                    oldInput:{
+                         currentPass: '',
+                         newPass: '',
+                         confirmPass: ''
+                    },
+                    validationErrors: []
                })
           })
           .catch(err =>{
@@ -195,6 +195,24 @@ exports.postNewPassword = (req, res, next)=>{
      const confirmPass = req.body.confirmPassword;
      const passwordToken = req.body.passwordToken;
      const userId = req.body.userId;
+
+     const errors = validationResult(req);
+
+     console.log(errors.array())
+     if(!errors.isEmpty()){
+          return res.status(422).render("auth/new-password",{
+               pageTitle: "New Password",
+               errorMessage: errors.array()[0].msg,
+               userId: userId,
+               passwordToken: passwordToken,
+               oldInput:{
+                    currentPass: currentPass,
+                    newPass: newPass,
+                    confirmPass: confirmPass
+               },
+               validationErrors: errors.array()
+          });
+     }
 
      let resetUser;
 

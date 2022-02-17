@@ -2,6 +2,7 @@ const Categories = require("../models/categories");
 const Items = require("../models/items");
 const Users = require("../models/Users");
 const Roles = require("../models/roles");
+const Comments = require("../models/comments");
 const bcrypt = require("bcryptjs");
 const { validationResult } = require("express-validator");
 
@@ -318,13 +319,19 @@ exports.getItemDetail = (req, res, next)=>{
      const itemId = req.params.itemId;
      Items.findById(itemId)
           .then(item =>{
-               res.render("admin/detail", {
-                    pageTitle : "Detail",
-                    item : item,
-                    user : req.user.name,
-                    editing : false,
-                    path: ''
-               });
+               Comments.find()
+                    .then(comments=>{
+                         
+                         res.render("admin/detail", {
+                              pageTitle : "Detail",
+                              item : item,
+                              user : req.user.name,
+                              userInfo: req.user,
+                              editing : false,
+                              path: '',
+                              comments: comments
+                         });
+                    })
           })
           .catch(err =>{
                console.log(err);
@@ -789,7 +796,7 @@ exports.postAddEmployee = (req, res, next)=>{
                     subject: "Welcome To National Cyber City",
                     html: `
                          <h1>Now, You Can Use National Cyber City's App</h1>
-                         <h3>Click this <a href="https://jewelry-third-step.herokuapp.com/">link</h3> 
+                         <h3>Click this <a href="http://localhost:8080/">link</h3> 
                          `
                   };
 

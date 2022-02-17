@@ -79,57 +79,46 @@
                   </div>
               
                   <!-- Comments -->
-                  <div class="mb-1">
-                    <div class="d-flex">
-                      <div class="flex-shrink-0">
-                        <img alt="Image placeholder" class="avatar rounded-circle" src="/img/bruce-mars.jpg">
-                      </div>
-                      <div class="flex-grow-1 ms-3">
-                        <h6 class="h5 mt-0">Michael Lewis</h6>
-                        <p class="text-sm">I always felt like I could do anything. That’s the main thing people are controlled by! Thoughts- their perception of themselves!</p>
-                        <div class="d-flex">
-                          <div>
-                            <i class="material-icons text-sm me-1 cursor-pointer">thumb_up</i>
-                          </div>
-                          <span class="text-sm me-2">3 likes</span>
-                          <div>
-                            <i class="material-icons text-sm me-1 cursor-pointer">share</i>
-                          </div>
-                          <span class="text-sm me-2">2 shares</span>
+                  <div class="typing text-success">
+
+                    <div class="mb-1 comment__box">
+
+                      <% if(comments.length > 0){%>
+                        <% for(let comment of comments) {%>
+                          <!-- Start One Comment -->
+                      <div class="d-flex mt-3">
+                        <div class="flex-shrink-0">
+                          <img alt="Image placeholder" class="avatar rounded-circle" src="/img/team-5.jpg">
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                          <h6 class="h5 mt-0"><%= comment.name %></h6>
+                          <p class="text-sm"><%= comment.comment %></p>
+                          <div class="d-flex">
+                            <small><%= comment.createdAt %></small>
+                           </div>
                         </div>
                       </div>
-                    </div>
-                    <div class="d-flex mt-3">
-                      <div class="flex-shrink-0">
-                        <img alt="Image placeholder" class="avatar rounded-circle" src="/img/team-5.jpg">
-                      </div>
-                      <div class="flex-grow-1 ms-3">
-                        <h6 class="h5 mt-0">Jessica Stones</h6>
-                        <p class="text-sm">Society has put up so many boundaries, so many limitations on what’s right and wrong that it’s almost impossible to get a pure thought out. It’s like a little kid, a little boy.</p>
-                        <div class="d-flex">
-                          <div>
-                            <i class="material-icons text-sm me-1 cursor-pointer">thumb_up</i>
-                          </div>
-                          <span class="text-sm me-2">10 likes</span>
-                          <div>
-                            <i class="material-icons text-sm me-1 cursor-pointer">share</i>
-                          </div>
-                          <span class="text-sm me-2">1 share</span>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="d-flex mt-4">
-                      <div class="flex-shrink-0">
-                        <img alt="Image placeholder" class="avatar rounded-circle me-3" src="/img/team-4.jpg">
-                      </div>
-                      <div class="flex-grow-1 my-auto">
-                        <div class="input-group input-group-static">
-                          <textarea class="form-control" placeholder="Write your comment" rows="4" spellcheck="false"></textarea>
-                        </div>
-                      </div>
-                      <button class="btn bg-gradient-primary btn-sm mt-auto mb-0 ms-2" type="button" name="button"><i class="material-icons text-sm">send</i></button>
+                      <!-- End One Comment -->
+                        <% } %>
+                      <% } %>
+
                     </div>
                   </div>
+
+                  <div class="d-flex mt-4">
+                    <div class="flex-shrink-0">
+                      <img alt="Image placeholder" class="avatar rounded-circle me-3" src="/img/team-4.jpg">
+                    </div>
+                    <div class="flex-grow-1 my-auto">
+                      <div class="input-group input-group-static">
+                        <textarea id="textarea" class="form-control" placeholder="Write your comment" rows="4" spellcheck="false"></textarea>
+                      </div>
+                    </div>
+                    <input class="itemId" type="hidden" name="itemId" value="<%= item._id %>">
+                    <input class="username" type="hidden" name="username" value="<%= userInfo.name %>">
+                    <button id="submitBtn" class="btn bg-gradient-primary btn-sm mt-auto mb-0 ms-2"  name="button"><i class="material-icons text-sm">send</i></button>
+                  </div>
+
                 </div>
               </div>
             </div>
@@ -141,5 +130,9 @@
 
   </div>
 
+  <!-- Socket -->
+  
   <!--   Core JS Files   -->
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/js/socket/socket.js"></script>
   <%- include('../includes/end.ejs') %>
