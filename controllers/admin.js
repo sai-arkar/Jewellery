@@ -4,6 +4,9 @@ const Users = require("../models/Users");
 const Roles = require("../models/roles");
 const Comments = require("../models/comments");
 const bcrypt = require("bcryptjs");
+
+const moment = require("moment");
+
 const { validationResult } = require("express-validator");
 
 const sgMail = require('@sendgrid/mail')
@@ -21,7 +24,7 @@ exports.getAdminDashborad = (req, res, next)=>{
           console.log("Account Does not Exist");
           return res.redirect('/');
      }
-     res.render("admin/dashboard", {
+     res.status(201).render("admin/dashboard", {
           pageTitle : "Admin Dashboard",
           user : req.user.name,
           editing : false,
@@ -34,7 +37,7 @@ exports.getAddCate = (req, res, next)=>{
           console.log("Account Does not Exist");
           return res.redirect('/');
      }
-     res.render("admin/add-cate", {
+     res.status(201).render("admin/add-cate", {
           pageTitle : "Add Category",
           editing : false,
           user : req.user.name,
@@ -42,7 +45,7 @@ exports.getAddCate = (req, res, next)=>{
      });
 }
 
-exports.postAddCate = (req, res, next)=>{
+exports.postAddCate =async (req, res, next)=>{
      const title = req.body.title;
 
      const category = new Categories({
@@ -50,39 +53,42 @@ exports.postAddCate = (req, res, next)=>{
           userId: req.user
      });
 
-     category.save()
-          .then(()=>{
-               console.log("Add Category!");
-               res.redirect("/admin/add-cate");
-          })
-          .catch(err=>{
-               console.log(err);
-          })
+     try{
+          await category.save();
+
+          console.log("Add Category!");
+          res.status(300).redirect("/admin/add-cate");
+
+     }catch(err){
+          const error = new Error(err);
+          error.httpStatusCode = 500;
+          return next(error);
+     }
 }
 
-exports.getEditCate = (req, res, next)=>{
+exports.getEditCate =async (req, res, next)=>{
      if(!req.user){
           console.log("Account Does not Exist");
-          return res.redirect('/');
+          return res.status(300).redirect('/');
      }
 
      const editMode = req.query.edit;
      const cateId = req.params.cateId;
 
      if(!editMode){
-          return res.redirect('/admin/categories');
+          return res.status(300).redirect('/admin/categories');
      }
 
-     Categories.findById(cateId)
-          .then(cate=>{
+     try{
+          let cate = await Categories.findById(cateId);
                if(!cate){
-                    return res.redirect("/admin/categories");
+                    return res.status(300).redirect("/admin/categories");
                }
               
                if( req.user._id.toString() === '62031c692c2300baf01541f2' 
                     || cate.userId.toString() == req.user._id.toString() ){
 
-                         res.render('admin/add-cate', {
+                         res.status(201).render('admin/add-cate', {
                               pageTitle : 'Edit Category',
                               editing : editMode,
                               cate : cate,
@@ -91,66 +97,70 @@ exports.getEditCate = (req, res, next)=>{
                          })
                }else{
                     console.log("Not Authorized!");
-                    return res.redirect("/admin/categories"); 
+                    return res.status(300).redirect("/admin/categories"); 
                }
-          })
-          .catch(err=>{
-               console.log(err);
-          })
+     }catch(err){
+          const error = new Error(err);
+          error.httpStatusCode = 500;
+          return next(error);
+     }
 
 }
 
-exports.postEditCate = (req, res, next)=>{
+/* Need Some Testing */
+exports.postEditCate = async (req, res, next)=>{
      const cateId = req.body.cateId;
      const updatedTitle = req.body.title;
 
-     Categories.findById(cateId)
-          .then(cate=>{
+     try{
+          let cate = await Categories.findById(cateId);
                if(req.user._id.toString() === '62031c692c2300baf01541f2' 
-               || cate.userId.toString() == req.user._id.toString() )
+               || cate.userId.toString() === req.user._id.toString() )
                {
                     cate.title = updatedTitle;
-                    return cate.save();  
+                    const result = await cate.save(); 
+                    console.log("Updated Category!");
+                    res.status(300).redirect("/admin/categories");
+                     
                }else{
                     console.log("Not Authorized!");
-                    return res.redirect("/admin/categories");
+                    res.status(300).redirect("/admin/categories");
                }
                
-          })
-          .then(()=>{
-               console.log("Updated Category!");
-               res.redirect("/admin/categories");
-          })
-          .catch(err=>{
-               console.log(err);
-          })
+     }catch(err){
+          const error = new Error(err);
+          error.httpStatusCode = 500;
+          return next(error);
+     }
 }
 
-exports.getCategories = (req, res, next)=>{
+exports.getCategories = async (req, res, next)=>{
      if(!req.user){
           console.log("Account Does not Exist");
-          return res.redirect('/');
+          return res.status(300).redirect('/');
      }
-
-     Categories.find()
-          .then(result=>{
-               res.render("admin/categories", {
+     try{
+          let result = await Categories.find();
+               res.status(201).render("admin/categories", {
                     pageTitle : "Categories",
                     categories : result,
                     user : req.user.name,
                     editing : false,
                     path: '/admin/categories'
                });
-          })
-          .catch(err=>{
-               console.log(err);
-          })
+     }catch(err){
+          const error = new Error(err);
+          error.httpStatusCode = 500;
+          return next(error);
+     }
+
 }
 
-exports.deleteCate = (req, res, next)=>{
+exports.deleteCate = async (req, res, next)=>{
      const cateId = req.params.cateId;
-     Categories.findById(cateId)
-          .then(cate=>{
+
+     try{
+          let cate = await Categories.findById(cateId);
                if(!cate){
                     return next(new Error('Category Not Found!'));
                }
@@ -158,12 +168,10 @@ exports.deleteCate = (req, res, next)=>{
                if(req.user._id.toString() === '62031c692c2300baf01541f2' 
                || cate.userId.toString() == req.user._id.toString() )
                {
-                    Categories.deleteOne({_id: cateId})
-                    .then(()=>{
+                    let result = await Categories.deleteOne({_id: cateId});
                          res.status(200).json({ message : 'Success!'});
-                         return Items.find();
-                    })
-                    .then((items)=>{
+
+                    let items = await Items.find();
                          items.map(item=>{
                               if(item.categoryId.toString() == cateId.toString()){
                                    fileHelper.deleteFile(item.image);
@@ -172,32 +180,28 @@ exports.deleteCate = (req, res, next)=>{
                                    });
                               }
                          })
-                         return Items.deleteMany({categoryId : cateId});
-                    })
-                    .then(()=>{
+                    let deleteResult = await Items.deleteMany({categoryId : cateId});
                          console.log("Delete Related Items From Category!");
-                    })
                }else{
                     console.log("Not Authorized!");
-                    return res.redirect("/admin/categories");
+                    return res.status(300).redirect("/admin/categories");
                }
 
-          })
-          .catch(err=>{
-               res.status(500).json({ message : "Deleting Category Failed!"});
-          })
+     }catch(err){
+          res.status(500).json({ message : "Deleting Category Failed!"});
+     }
           
 }
 
-exports.getAddItem = (req, res, next)=>{
+exports.getAddItem = async (req, res, next)=>{
      if(!req.user){
           console.log("Account Does not Exist");
-          return res.redirect('/');
+          return res.status(300).redirect('/');
      }
 
-     Categories.find()
-          .then(result=>{
-               res.render('admin/add-item', {
+     try{
+          let result = await Categories.find();
+               res.status(201).render('admin/add-item', {
                     pageTitle : "Add Item",
                     categories : result,
                     adding : true,
@@ -205,13 +209,14 @@ exports.getAddItem = (req, res, next)=>{
                     user : req.user.name,
                     path: '/admin/add-item'
                })
-          })
-          .catch(err=>{
-               console.log(err);
-          })
+     }catch(err){
+          const error = new Error(err);
+          error.httpStatusCode = 500;
+          return next(error);
+     }
 }
 
-exports.postAddItem = (req, res, next)=>{
+exports.postAddItem = async (req, res, next)=>{
      const categoryId = req.body.categoryId;
      const title = req.body.title;
      const description = req.body.description;
@@ -229,29 +234,30 @@ exports.postAddItem = (req, res, next)=>{
           relatedImageArr.push(item.path);
      })
 
-     const item = new Items({
-          categoryId : categoryId,
-          title: title,
-          image : image[0].path,
-          relatedImg: relatedImageArr,
-          description: description,
-          price : price,
-          userId: req.user
-     });
-     item.save()
-          .then(result=>{
+     try{
+          const item = new Items({
+               categoryId : categoryId,
+               title: title,
+               image : image[0].path,
+               relatedImg: relatedImageArr,
+               description: description,
+               price : price,
+               userId: req.user
+          });
+          const result = await item.save()
                console.log("Add Item Successfully!");
-               res.redirect("/admin/all-items");
-          })
-          .catch(err=>{
-               console.log(err);
-          })
+               res.status(300).redirect("/admin/all-items");
+     }catch(err){
+          const error = new Error(err);
+          error.httpStatusCode = 500;
+          return next(error);
+     }
 }
 
-exports.declineItem = (req, res, next)=>{
+exports.declineItem = async (req, res, next)=>{
      const itemId = req.params.itemId;
-     Items.findById(itemId)
-          .then(item=>{
+     try{
+          let item = await Items.findById(itemId)
                if(!item){
                     return next(new Error('Item Not Found!'));
                }
@@ -264,37 +270,80 @@ exports.declineItem = (req, res, next)=>{
                          fileHelper.deleteFile(path);
                     })
 
-                    Items.deleteOne({_id:itemId})
-                         .then(()=>{
-                              res.status(200).json({ message : 'Success!'});
-                              console.log("Deleted Item!");
-                         })
+                    const result = await Items.deleteOne({_id:itemId})
+                         res.status(200).json({ message : 'Success!'});
+                         console.log("Deleted Item!");
                }else{
                     console.log("Not Authorized!");
-                    return res.redirect("/admin/all-items");
+                    return res.status(403).redirect("/admin/all-items");
                }
                
-          })
-          .catch(err=>{
-               console.log(err);
-          })
+     }catch(err){
+          const error = new Error(err);
+          error.httpStatusCode = 500;
+          return next(error);
+     }
 }
 
-exports.getAllItems = (req, res, next)=>{
+exports.postApproveItem = async (req, res, next)=>{
+     const itemId = req.params.itemId;
+
+     try{
+          let item = await Items.findById(itemId);
+               if(!item){
+                    return res.status(300).redirect('/admin/all-items');
+               }
+               item.state = true;
+               await item.save()
+                    res.status(200).json({message : "Approve Item"});
+     }catch(err){
+          const error = new Error(err);
+          error.httpStatusCode = 500;
+          return next(error);
+     }
+}
+
+
+exports.getApprovedItems = async(req, res, next)=>{
      if(!req.user){
           console.log("Account Does not Exist");
-          return res.redirect('/');
+          return res.status(404).redirect('/');
      }
 
      let getItems;
-     Items.find()
-          .populate('categoryId')
-          .then(resultItems =>{
+     
+     try{
+          let resultItems = await Items.find().populate('categoryId');
                getItems = resultItems;
-               return Categories.find();
-          })
-          .then(cateResult =>{
-               res.render('admin/all-items', {
+          let cateResult = await Categories.find();
+               res.status(201).render('admin/approved-items', {
+                    pageTitle : "Approved Items",
+                    items : getItems,
+                    categories : cateResult,
+                    editing: false,
+                    user : req.user.name,
+                    path: '/admin/approved-items'
+               });
+     }catch(err){
+          const error = new Error(err);
+          error.httpStatusCode = 500;
+          return next(error);
+     }
+}
+
+
+exports.getAllItems = async (req, res, next)=>{
+     if(!req.user){
+          console.log("Account Does not Exist");
+          return res.status(404).redirect('/');
+     }
+
+     let getItems;
+     try{
+          let resultItems = await Items.find().populate('categoryId');
+               getItems = resultItems;
+          let cateResult = await Categories.find();
+               res.status(201).render('admin/all-items', {
                     pageTitle : "Pending Items",
                     items : getItems,
                     categories : cateResult,
@@ -302,47 +351,69 @@ exports.getAllItems = (req, res, next)=>{
                     user : req.user.name,
                     path: '/admin/all-items'
                });
-          })
-          .catch(err =>{
-               console.log(err);
-          })
+     }catch(err){
+          const error = new Error(err);
+          error.httpStatusCode = 500;
+          return next(error);
+     }
 }
 
-
-
-exports.getItemDetail = (req, res, next)=>{
+exports.getItemDetail = async (req, res, next)=>{
      if(!req.user){
           console.log("Account Does not Exist");
-          return res.redirect('/');
+          return res.status(404).redirect('/');
      }
 
      const itemId = req.params.itemId;
-     Items.findById(itemId)
-          .then(item =>{
-               Comments.find()
-                    .then(comments=>{
-                         
-                         res.render("admin/detail", {
-                              pageTitle : "Detail",
-                              item : item,
-                              user : req.user.name,
-                              userInfo: req.user,
-                              editing : false,
-                              path: '',
-                              comments: comments
-                         });
-                    })
-          })
-          .catch(err =>{
-               console.log(err);
-          })
+
+     try{
+          let item = await Items.findById(itemId);
+          let comments = await Comments.find({itemId: itemId});
+               let time = moment(comments.createdAt).format('LT');
+               res.status(201).render("admin/detail", {
+                    pageTitle : "Detail",
+                    item : item,
+                    user : req.user.name,
+                    userInfo: req.user,
+                    editing : false,
+                    path: '',
+                    comments: comments,
+                    time: time,
+                    itemId: itemId
+               });
+     }catch(err){
+          const error = new Error(err);
+          error.httpStatusCode = 500;
+          return next(error);
+     }
 }
 
+exports.postComment = async (req, res, next)=>{
+     const itemId = req.body.itemId;
+     const userComment = req.body.comment;
 
-exports.getEditItem = (req, res, next)=>{
+     try{
+          const comment = new Comments({
+               userId: req.user,
+               itemId: itemId,
+               name: req.user.name,
+               comment: userComment
+          });
+          await comment.save();
+
+          res.status(300).redirect("/admin/items/"+itemId);
+
+     }catch(err){
+          const error = new Error(err);
+          error.httpStatusCode = 500;
+          return next(error);
+     }
+}
+
+exports.getEditItem = async (req, res, next)=>{
      if(!req.user){
           console.log("Account Does not Exist");
-          return res.redirect('/');
+          return res.status(404).redirect('/');
      }
 
      const editMode = req.query.edit;
@@ -351,17 +422,17 @@ exports.getEditItem = (req, res, next)=>{
           return res.redirect('/admin/all-items');
      }
      const itemId = req.params.itemId;
-     Items.findById(itemId)
-          .then(item =>{
+     
+     try{
+          let item = await Items.findById(itemId);
                if(item.userId.toString() !== req.user._id.toString()
                || req.user._id.toString() !== '62031c692c2300baf01541f2'){
                     console.log("Not Authorized!");
                     return res.redirect("/admin/all-items");
                }
                getItems = item;
-               Categories.find()
-                    .then(categories =>{
-                         res.render('admin/add-item', {
+               let categories = await Categories.find();
+                         res.status(201).render('admin/add-item', {
                               pageTitle : "Edit Item",
                               editing : editMode,
                               adding : false,
@@ -370,14 +441,15 @@ exports.getEditItem = (req, res, next)=>{
                               user : req.user.name,
                               path: '/admin/add-item'
                          })
-                    })
-          })
-          .catch(err=>{
-               console.log(err);
-          })
+     }catch(err){
+          const error = new Error(err);
+          error.httpStatusCode = 500;
+          return next(error);
+     }
+
 }
 
-exports.postEditItem = (req, res, next)=>{
+exports.postEditItem = async (req, res, next)=>{
      const categoryId = req.body.categoryId;
      const itemId = req.body.itemId;
      const updatedTitle = req.body.title;
@@ -387,8 +459,6 @@ exports.postEditItem = (req, res, next)=>{
      const image = req.files.image;
      const updateRImage = req.files.relatedImage;
 
-     console.log(image);
-     
      let updateRImageArr = [];
      
      if(updateRImage){
@@ -397,8 +467,8 @@ exports.postEditItem = (req, res, next)=>{
           })
      }
      
-     Items.findById(itemId)
-          .then(item =>{
+     try{
+          let item = await Items.findById(itemId);
                if(!item){
                     return res.redirect('/admin/all-items');
                }
@@ -422,78 +492,31 @@ exports.postEditItem = (req, res, next)=>{
                     item.relatedImg = updateRImageArr;
                }
                item.state = false;
-               return item.save();
-          })
-          .then(()=>{
+
+               await item.save();
+
                if(updateRImage){
                     relatedImageArr = updateRImageArr;
                }
-               // console.log('UpdateRImage array ',updateRImageArr);
-               // console.log('Update related image Array',relatedImageArr);
+               
                console.log("Updated Item");
-               res.redirect("/admin/all-items");
-          })
-          .catch(err=>{
-               console.log(err);
-          })
-}
-
-exports.postApproveItem = (req, res, next)=>{
-     const itemId = req.params.itemId;
-
-     Items.findById(itemId)
-          .then(item=>{
-               if(!item){
-                    return res.redirect('/admin/all-items');
-               }
-               item.state = true;
-               item.save()
-                    .then(()=>{
-                         res.status(200).json({message : "Approve Item"});
-                    })
-          })
-          .catch(err=>{
-               console.log(err);
-          })
-}
-
-
-exports.getApprovedItems = (req, res, next)=>{
-     if(!req.user){
-          console.log("Account Does not Exist");
-          return res.redirect('/');
+               res.status(300).redirect("/admin/all-items");
+     }catch(err){
+          const error = new Error(err);
+          error.httpStatusCode = 500;
+          return next(error);
      }
 
-     let getItems;
-     Items.find()
-          .populate('categoryId')
-          .then(resultItems =>{
-               getItems = resultItems;
-               return Categories.find();
-          })
-          .then(cateResult =>{
-               res.render('admin/approved-items', {
-                    pageTitle : "Approved Items",
-                    items : getItems,
-                    categories : cateResult,
-                    editing: false,
-                    user : req.user.name,
-                    path: '/admin/approved-items'
-               });
-          })
-          .catch(err =>{
-               console.log(err);
-          })
 }
 
-exports.getProfile = (req, res, next)=>{
+
+exports.getProfile = async (req, res, next)=>{
      if(!req.user){
-          console.log("Account Does not Exist");
+          console.status(404).log("Account Does not Exist");
           return res.redirect('/');
      }
-
-     Users.findOne(req.user)
-          .then((result)=>{
+     try{
+          let result = await Users.findOne(req.user);
                res.render("admin/profile", {
                     pageTitle : "Profile",
                     user : result.name,
@@ -501,17 +524,22 @@ exports.getProfile = (req, res, next)=>{
                     editing : false,
                     path: '/admin/profile'
                });
-          })
+     }catch(err){
+          const error = new Error(err);
+          error.httpStatusCode = 500;
+          return next(error);
+     }
+     
 }
 
-exports.postProfileInfo = (req, res, next)=>{
+exports.postProfileInfo = async (req, res, next)=>{
      const userId = req.body.userId;
      const updatedName = req.body.name;
      const updatedEmail = req.body.email;
      const updatedConEmail = req.body.confirmEmail;
 
-     Users.findOne({userId})
-          .then(user =>{
+     try{
+          let user = await Users.findOne({userId});
                if(!user){
                     console.log("User Not Exit");
                     return res.redirect("/admin/profile");
@@ -522,44 +550,42 @@ exports.postProfileInfo = (req, res, next)=>{
                if(updatedEmail){
                     user.email = updatedEmail;
                }
-               return user.save();
-          })
-          .then(()=>{
+               await user.save();
+
                console.log("Updated User Info");
-               res.redirect("/admin/profile");
-          })
-          .catch(err=>console.log(err));
+               res.status(300).redirect("/admin/profile");
+     }catch(err){
+          const error = new Error(err);
+          error.httpStatusCode = 500;
+          return next(error);
+     }
+
 }
 
-exports.postChangePass = (req, res, next)=>{
+exports.postChangePass = async (req, res, next)=>{
      const userId = req.body.userId;
      const currentPass = req.body.currentPass;
      const newPass = req.body.newPass;
      const confirmPass = req.body.confirmPass;
 
-     Users.findOne({userId})
-          .then((user)=>{
-               bcrypt.compare(currentPass, user.password)
-                    .then(doMatch =>{
-                         if(!doMatch){
-                              console.log("Password Didn't Match");
-                              return res.redirect('/admin/profile');
-                         }
-                         bcrypt.hash(newPass, 12)
-                              .then(hashedPass =>{
-                                   
-                                   user.password = hashedPass;
-                                   user.save()
-                                        .then(()=>{
-                                             console.log("Change Password!");
-                                             res.redirect("/admin/profile");
-                                        })
-                              })
-                    })
-          })
-          .catch(err=>{
-               console.log(err);
-          })
+     try{
+          let user = await Users.findOne({userId});
+          let doMatch = await bcrypt.compare(currentPass, user.password);
+               if(!doMatch){
+                    console.log("Password Didn't Match");
+                    return res.status(300).redirect('/admin/profile');
+               }
+               let hashedPass = await bcrypt.hash(newPass, 12);
+                         
+                    user.password = hashedPass;
+                    await user.save();
+                         console.log("Change Password!");
+                         res.status(300).redirect("/admin/profile");
+     }catch(err){
+          const error = new Error(err);
+          error.httpStatusCode = 500;
+          return next(error);
+     }
 }
 
 // user ဖန်တီးထားတဲ့ items တွေနဲ့ images တွေကိုပါ Delete လုပ်ပေးရမယ်။
@@ -570,7 +596,7 @@ exports.postDeleteAcc = (req, res, next)=>{
 exports.getAddRole = (req, res, next)=>{
      if(!req.user){
           console.log("Account Does not Exist");
-          return res.redirect('/');
+          return res.status(300).redirect('/');
      }
 
      res.render('admin/add-role', {
@@ -581,63 +607,72 @@ exports.getAddRole = (req, res, next)=>{
      });
 }
 
-exports.postAddRole = (req, res, next)=>{
+exports.postAddRole = async (req, res, next)=>{
      const title = req.body.title;
      const description = req.body.description;
 
-     const role = new Roles({
-          title,
-          description,
-          userId: req.user
-     });
-
-     role.save()
-          .then(()=>{
-               console.log("Created Role");
-               res.redirect("/admin/add-role");
-          })
-          .catch(err=>{
-               console.log(err);
-          })
-}
-
-exports.getRole = (req, res, next)=>{
-     if(!req.user){
-          console.log("Account Does not Exist");
-          return res.redirect('/');
+     try{
+          const role = new Roles({
+               title,
+               description,
+               userId: req.user
+          });
+     
+          await role.save()
+          
+          console.log("Created Role");
+          
+          res.status(300).redirect("/admin/add-role");
+     }catch(err){
+          const error = new Error(err);
+          error.httpStatusCode = 500;
+          return next(error);
      }
 
-     Roles.find()
-          .then(result =>{
-               res.render("admin/roles", {
-                    path: '/admin/roles',
-                    pageTitle: "All Roles",
-                    editing : false,
-                    user: req.user.name,
-                    roles : result
-               });
-          })
+}
+
+exports.getRole = async (req, res, next)=>{
+     if(!req.user){
+          console.log("Account Does not Exist");
+          return res.status(300).redirect('/');
+     }
+
+     try{
+          let result = await Roles.find();
+          res.render("admin/roles", {
+               path: '/admin/roles',
+               pageTitle: "All Roles",
+               editing : false,
+               user: req.user.name,
+               roles : result
+          });
+     }catch(err){
+          const error = new Error(err);
+          error.httpStatusCode = 500;
+          return next(error);
+     }
+ 
 }
 
 exports.getTestDatatable = (req, res, next)=>{
-     res.render('admin/test-datatable');
+     res.status(300).render('admin/test-datatable');
 }
 
-exports.getEditRole = (req, res, next)=>{
+exports.getEditRole = async (req, res, next)=>{
      if(!req.user){
           console.log("Account Does not Exist");
-          return res.redirect('/');
+          return res.status(300).redirect('/');
      }
 
      const editMode = req.query.edit;
      const roleId = req.params.roleId;
 
      if(!editMode){
-          return res.redirect('/admin/roles');
+          return res.status(300).redirect('/admin/roles');
      }
 
-     Roles.findById(roleId)
-          .then(role=>{
+     try{
+          let role = await Roles.findById(roleId);
                if(!role){
                     return res.redirect("/admin/roles");
                }
@@ -645,7 +680,7 @@ exports.getEditRole = (req, res, next)=>{
                if( req.user._id.toString() === '62031c692c2300baf01541f2' 
                     && role.userId.toString() == req.user._id.toString() ){
 
-                         res.render('admin/add-role', {
+                         res.status(201).render('admin/add-role', {
                               pageTitle : 'Edit Role',
                               editing : editMode,
                               role : role,
@@ -654,47 +689,49 @@ exports.getEditRole = (req, res, next)=>{
                          })
                }else{
                     console.log("Not Authorized!");
-                    return res.redirect("/admin/roles"); 
+                    return res.status(300).redirect("/admin/roles"); 
                }
-          })
-          .catch(err=>{
-               console.log(err);
-          })
+     }catch(err){
+          const error = new Error(err);
+          error.httpStatusCode = 500;
+          return next(error);
+     }
 
 }
 
-exports.postEditRole = (req, res, next)=>{
+exports.postEditRole = async (req, res, next)=>{
      const roleId = req.body.roleId;
      const updatedTitle = req.body.title;
      const updatedDesc = req.body.description;
 
-     Roles.findById(roleId)
-          .then(role=>{
+     try{
+          let role = await Roles.findById(roleId);
                if(req.user._id.toString() === '62031c692c2300baf01541f2' 
                || role.userId.toString() == req.user._id.toString() )
                {
                     role.title = updatedTitle;
                     role.description = updatedDesc;
-                    return role.save();  
+                    await role.save();
+                    console.log("Updated Role!");
+                    res.redirect("/admin/roles");
+
                }else{
                     console.log("Not Authorized!");
-                    return res.redirect("/admin/roles");
+                    res.redirect("/admin/roles");
                }
-               
-          })
-          .then(()=>{
-               console.log("Updated Role!");
-               res.redirect("/admin/roles");
-          })
-          .catch(err=>{
-               console.log(err);
-          })
+     }catch(err){
+          const error = new Error(err);
+          error.httpStatusCode = 500;
+          return next(error);
+     }
+
 }
 
-exports.deleteRole = (req, res, next)=>{
+exports.deleteRole = async (req, res, next)=>{
      const roleId = req.params.roleId;
-     Roles.findById(roleId)
-          .then(role=>{
+     
+     try{
+          let role = await Roles.findById(roleId);
                if(!role){
                     return next(new Error('Role Not Found!'));
                }
@@ -702,35 +739,35 @@ exports.deleteRole = (req, res, next)=>{
                if(req.user._id.toString() === '62031c692c2300baf01541f2' 
                || role.userId.toString() == req.user._id.toString() )
                {
-                    Roles.deleteOne({_id: roleId})
-                    .then(()=>{
+                    await Roles.deleteOne({_id: roleId});
                          console.log("Delete Role!");
                          res.status(200).json({ message : 'Success!'});
-                    })
+
                }else{
                     console.log("Not Authorized!");
                     return res.redirect("/admin/roles");
                }
 
-          })
-          .catch(err=>{
-               res.status(500).json({ message : "Deleting Role Failed!"});
-          })
+     }catch(err){
+          res.status(500).json({ message : "Deleting Role Failed!"});
+     }
 }
 
-exports.getAddEmployee = (req, res, next)=>{
+exports.getAddEmployee = async (req, res, next)=>{
      if(!req.user){
           console.log("Account Does not Exist");
           return res.redirect('/');
      }
 
-     Roles.find()
-          .then(result=>{
+     try{
+          let result = await Roles.find();
                test = result
                roleForUse = new Array();
+
                result.map(role=>{
                     roleForUse.push(role);
                })
+
                res.render("admin/add-employee", {
                     pageTitle : 'Add Employee',
                     editing : false,
@@ -745,20 +782,21 @@ exports.getAddEmployee = (req, res, next)=>{
                     },
                     validationErrors: []
                });
-          })
-          .catch(err=>{
-               console.log(err);
-          })
+     }catch(err){
+          const error = new Error(err);
+          error.httpStatusCode = 500;
+          return next(error);
+     }
+     
 }
 
-exports.postAddEmployee = (req, res, next)=>{
+exports.postAddEmployee = async (req, res, next)=>{
      const name = req.body.name;
      const email = req.body.email;
      const password = req.body.password;
      const roleTitle = req.body.roleTitle;
 
      const errors = validationResult(req);
-     console.log(email);
      if(!errors.isEmpty()){
           return res.status(422).render("admin/add-employee",{
                pageTitle: "Add Employee",
@@ -777,19 +815,18 @@ exports.postAddEmployee = (req, res, next)=>{
           });
      }
                
-     bcrypt.hash(password, 12)
-          .then(hashedPass=>{
+     try{
+          let hashedPass = await bcrypt.hash(password, 12);
                const employee = new Users({
                     name,
                     email,
                     password: hashedPass,
                     status: roleTitle
                });
-               return employee.save();
-          })
-          .then(()=>{
+               await employee.save();
                console.log("Created Employee");
                res.redirect('/admin/add-employee');
+
                const msg = {
                     to: req.body.email, // Change to your recipient
                     from: 'saiscript.digit@gmail.com', // Change to your verified sender
@@ -809,20 +846,21 @@ exports.postAddEmployee = (req, res, next)=>{
                   .catch((error) => {
                     console.error(error)
                   })
-          })
-          .catch(err=>{
-               console.log(err);
-          })
+     }catch(err){
+          const error = new Error(err);
+          error.httpStatusCode = 500;
+          return next(error);
+     }
 }
 
-exports.getAllEmployees = (req, res, next)=>{
+exports.getAllEmployees = async (req, res, next)=>{
      if(!req.user){
           console.log("Account Does not Exist");
           return res.redirect('/');
      }
      
-     Users.find()
-          .then(result =>{
+     try{
+          let result = await Users.find();
                res.render('admin/employees', {
                     pageTitle : 'Employees',
                     editing : false,
@@ -830,13 +868,14 @@ exports.getAllEmployees = (req, res, next)=>{
                     path: '/admin/employees',
                     users: result
                })
-          })
-          .catch(err=>{
-               console.log(err);
-          })
+     }catch(err){
+          const error = new Error(err);
+          error.httpStatusCode = 500;
+          return next(error);
+     }
 }
 
-exports.getEditEmployee = (req, res, next)=>{
+exports.getEditEmployee = async (req, res, next)=>{
      if(!req.user){
           console.log("Account Does not Exist");
           return res.redirect('/');
@@ -848,39 +887,41 @@ exports.getEditEmployee = (req, res, next)=>{
      if(!editMode){
           return res.redirect('/admin/employees');
      }
-     Users.findById(eId)
 
-          .then(result=>{
+     try{
+          let result = await Users.findById(eId);
+
                if(req.user._id.toString() === '62031c692c2300baf01541f2')
                {
-                    Roles.find()
-                         .then(roles =>{
-                              res.render('admin/add-employee', {
-                                   pageTitle : 'Edit Employee',
-                                   editing : editMode,
-                                   user : req.user.name,
-                                   path: '/admin/add-employee',
-                                   employee : result,
-                                   roles: roles,
-                                   errorMessage: false,
-                                   oldInput: {
-                                        name: '',
-                                        email: '',
-                                        password: '',
-                                        confirmPassword: ''
-                                   },
-                                   validationErrors: []
-                              })
+                    let roles = await Roles.find();
+                         res.render('admin/add-employee', {
+                              pageTitle : 'Edit Employee',
+                              editing : editMode,
+                              user : req.user.name,
+                              path: '/admin/add-employee',
+                              employee : result,
+                              roles: roles,
+                              errorMessage: false,
+                              oldInput: {
+                                   name: '',
+                                   email: '',
+                                   password: '',
+                                   confirmPassword: ''
+                              },
+                              validationErrors: []
                          })
                }else{
                     console.log("Not Authorized!");
                     return res.redirect("/admin/employees");
                }
-          })
-          .catch(err => console.log(err));
+     }catch(err){
+          const error = new Error(err);
+          error.httpStatusCode = 500;
+          return next(error);
+     }
 }
 
-exports.postEditEmployee = (req, res, next)=>{
+exports.postEditEmployee = async (req, res, next)=>{
      const eId = req.body.eId;
      const updatedName = req.body.name;
      const updatedEmail = req.body.email;
@@ -888,36 +929,35 @@ exports.postEditEmployee = (req, res, next)=>{
      const updatedPass = req.body.password;
      const updatedConPass = req.body.confirmPassword;
 
-     Users.findById(eId)
-          .then(user=>{
+     try{
+          let user = await Users.findById(eId);
                if(!user){
                     console.log("User Not Exist!");
                     return res.redirect('/admin/employees');
                }
                if(req.user._id.toString() === '62031c692c2300baf01541f2'){
 
-                    bcrypt.hash(updatedPass, 12)
-                         .then(hashedPass=>{
-                              user.name = updatedName;
-                              user.email = updatedEmail;
-                              user.password = hashedPass;
-                              user.status = updatedRole;
+                    let hashedPass = await bcrypt.hash(updatedPass, 12);
+                         user.name = updatedName;
+                         user.email = updatedEmail;
+                         user.password = hashedPass;
+                         user.status = updatedRole;
 
-                              return user.save();
-                         })
-                         .then(()=>{
-                              console.log("Updated User Info");
-                              res.redirect('/admin/employees');
-                         })
+                         await user.save();
+                         console.log("Updated User Info");
+                         res.redirect('/admin/employees');
                }
-          })
-          .catch(err=>console.log(err));
+     }catch(err){
+          const error = new Error(err);
+          error.httpStatusCode = 500;
+          return next(error);
+     }
 }
 
-exports.deleteEmployee = (req, res, next)=>{
+exports.deleteEmployee = async(req, res, next)=>{
      const eId = req.params.eId;
-     Users.findById(eId)
-          .then(employee=>{
+     try{
+          let employee = Users.findById(eId);
                if(!employee){
                     return next(new Error('employee Not Found!'));
                }
@@ -926,29 +966,24 @@ exports.deleteEmployee = (req, res, next)=>{
                     return res.redirect("/admin/employees");
                }
                
-               Users.deleteOne({_id:eId})
-                    .then(()=>{
-                         console.log("Deleted Employee!");
-                         res.status(200).json({ message : 'Success!'});
+               await Users.deleteOne({_id:eId});
+                    console.log("Deleted Employee!");
+                    res.status(200).json({ message : 'Success!'});
 
                          // must delete user-create items and items's images
-                         return Items.find({userId: eId})
-                    })
-                    .then(items=>{
-                         for(let item of items){
-                              fileHelper.deleteFile(item.image);
+               let items =  Items.find({userId: eId});
+                    for(let item of items){
+                         fileHelper.deleteFile(item.image);
                
-                              item.relatedImg.map(path=>{
-                                   fileHelper.deleteFile(path);
-                              })
-                              Items.deleteOne({userId: eId})
-                                   .then(()=>{
-                                        console.log("Deleted Item!");
-                                   })
-                         }
-                    })
-          })
-          .catch(err=>{
-               console.log(err);
-          })
+                         item.relatedImg.map(path=>{
+                              fileHelper.deleteFile(path);
+                         })
+                         await Items.deleteOne({userId: eId})
+                              console.log("Deleted Item!");
+                    }
+     }catch(err){
+          const error = new Error(err);
+          error.httpStatusCode = 500;
+          return next(error);
+     }
 }

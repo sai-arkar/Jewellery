@@ -37,6 +37,8 @@ router.get('/all-items', isAuth, adminControllers.getAllItems);
 /* Item Details */
 router.get('/items/:itemId', isAuth, adminControllers.getItemDetail);
 
+router.post("/comment", isAuth, adminControllers.postComment);
+
 /* Edit Item */
 router.get('/edit-item/:itemId', isAuth, adminControllers.getEditItem);
 

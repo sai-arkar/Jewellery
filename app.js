@@ -10,6 +10,8 @@ const session = require("express-session");
 const MongoDBStore = require('connect-mongodb-session')(session);
 const socket = require("socket.io");
 
+let port = 8080;
+
 // const csrf = require("csurf");
 
 // const csrfProtection = csrf();
@@ -32,6 +34,9 @@ const authRoutes = require("./routes/auth");
 const adminRoutes = require("./routes/admin");
 const appUserRoutes = require("./apiRoutes/appUserAuth");
 const appUserPost = require("./apiRoutes/appUserPost");
+const errorController = require("./controllers/error");
+
+const isAuth = require("./middleware/is-auth");
 
 app.use(cors());
 
@@ -63,6 +68,7 @@ app.use((req, res, next) => {
      }
      Users.findById(req.session.user._id)
        .then(user => {
+          //   throw new Error("Dummy");
          if(!user){
            return next();
          }
@@ -70,52 +76,28 @@ app.use((req, res, next) => {
          next();
        })
        .catch(err =>{
-         next(new Error(err));
+          next(new Error(err));
+           
        });
    });
 
-app.use('/admin', adminRoutes);
 app.use(authRoutes);
+app.use('/admin', adminRoutes);
 app.use('/api', appUserRoutes);
 app.use('/api', appUserPost);
 
-const Comment = require("./models/comments");
+app.use(errorController.get404);
+app.get('/500', isAuth, errorController.get500);
 
-app.post('/admin/comments', (req, res, next)=>{
-     const comment = new Comment({
-          userId: req.user,
-          name: req.user.name,
-          comment: req.body.comment
-     });
-     comment.save().then(response =>{
-          res.send(response)
-     })
+app.use((error, req, res, next)=>{
+     res.status(500).render('500');
 })
-
-app.get("/admin/comments", (req, res)=>{
-     Comment.find()
-          .then(comments=>{
-               res.send(comments);
-          })
-})
+   
 
 mongoose.connect(MONGODB_URI)
      .then(()=>{
-          console.log("Connected!");
-          const server = app.listen(process.env.PORT || 8080);
-          let io = require("./socket").init(server);
-          io.on('connection', (socket) => {
-               console.log("Client Connected");
-
-               socket.on('comment', (data) => {
-                   data.time = Date()
-                   socket.broadcast.emit('comment', data)
-               })
-           
-               socket.on('typing', (data) => {
-                   socket.broadcast.emit('typing', data) 
-               })
-           })
+          app.listen(process.env.PORT || port);
+          console.log("Server is Listen On Port : ", port);
      })
      .catch(err=>{
           console.log(err);

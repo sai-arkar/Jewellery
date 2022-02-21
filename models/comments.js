@@ -8,11 +8,11 @@ const commentSchema = new Schema({
           ref: 'Users',
           required: true
      },
-     // itemId: {
-     //      type: Schema.Types.ObjectId,
-     //      ref: "Items", 
-     //      required: true
-     // },
+     itemId: {
+          type: Schema.Types.ObjectId,
+          ref: "Items", 
+          required: true
+     },
      name: {
           type: String,
           required: true
