@@ -17,7 +17,8 @@ exports.postSignUp = (req, res, next)=>{
           .then(user =>{
                if(user){
                     return res.status(406).json({
-                         message: "Email Already Exist!"
+                         message: "Email Already Exist!",
+                         user: user
                     })
                }
                bcrypt.hash(password, 12)
