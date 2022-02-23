@@ -52,13 +52,13 @@ exports.postLogin = (req, res, next)=>{
      AppUsers.findOne({email: email})
           .then(user =>{
                if(!user){
-                    return res.status(401).json({ message : "User Not Found!"});
+                    return res.status(200).json({ message : "User Not Found!"});
                }
                loadedUser = user;
                bcrypt.compare(password, user.password)
                     .then(isEuqal=>{
                          if(!isEuqal){
-                              return res.status(401).json({ message : "Password Must be equal!"});
+                              return res.status(401).json({ message : "Incorret Password!"});
                          }
                          res.status(200).json({
                               userId: loadedUser._id.toString(),
@@ -68,7 +68,9 @@ exports.postLogin = (req, res, next)=>{
                     })
           })
           .catch(err =>{
-               console.log(err);
+               const error = new Error(err);
+               error.httpStatusCode = 500;
+               return next(error);
           });
 
 }
