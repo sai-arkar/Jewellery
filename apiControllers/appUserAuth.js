@@ -52,13 +52,13 @@ exports.postLogin = (req, res, next)=>{
      AppUsers.findOne({email: email})
           .then(user =>{
                if(!user){
-                    return res.status(200).json({ message : "User Not Found!"});
+                    return res.status(200).json({ message : "User Not Found!", error: true});
                }
                loadedUser = user;
                bcrypt.compare(password, user.password)
                     .then(isEuqal=>{
                          if(!isEuqal){
-                              return res.status(200).json({ message : "Incorret Password!"});
+                              return res.status(200).json({ message : "Incorret Password!", error: true});
                          }
                          res.status(200).json({
                               userId: loadedUser._id.toString(),
@@ -81,7 +81,7 @@ exports.getUser = (req, res, next)=>{
      AppUsers.findById(uId)
           .then(user=>{
                if(!user){
-                    return res.status(401).json({ message : "User Not Found!"});
+                    return res.status(401).json({ message : "User Not Found!", error: true});
                }
                Items.find({userId: uId})
                     .then(items=>{
