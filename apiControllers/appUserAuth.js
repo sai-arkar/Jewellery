@@ -58,7 +58,7 @@ exports.postLogin = (req, res, next)=>{
                bcrypt.compare(password, user.password)
                     .then(isEuqal=>{
                          if(!isEuqal){
-                              return res.status(401).json({ message : "Incorret Password!"});
+                              return res.status(200).json({ message : "Incorret Password!"});
                          }
                          res.status(200).json({
                               userId: loadedUser._id.toString(),
