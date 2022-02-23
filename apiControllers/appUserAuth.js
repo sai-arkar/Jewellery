@@ -16,7 +16,7 @@ exports.postSignUp = (req, res, next)=>{
      AppUsers.findOne({email: email})
           .then(user =>{
                if(user){
-                    return res.status().json({
+                    return res.status(200).json({
                          message: "Email Already Exist!",
                          user: user
                     })
