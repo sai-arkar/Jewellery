@@ -26,7 +26,7 @@ router.post("/", [
 router.post("/logout", authControllers.postLogOut);
 
 /* Change Password */
-router.get('/reset', isAuth, authControllers.getReset);
+router.get('/reset', authControllers.getReset);
 
 router.post("/reset", [
     
@@ -64,7 +64,7 @@ router.post('/new-password', [
         .isLength({min : 6})
         .isAlphanumeric(),
 
-    body("confirmPassword")
+    body("confirmPassword", "Password confirmation does not match password!")
         .trim()
         .isLength({min: 6})
         .isAlphanumeric()

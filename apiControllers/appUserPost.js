@@ -1,6 +1,8 @@
 const Posts = require("../models/items");
 const Categories = require("../models/categories");
+const Comments = require("../models/comments");
 const fileHelper = require("../middleware/file");
+const { selectFields } = require( "express-validator/src/select-fields" );
 
 let approvedPosts = []; /* To Store All Post for Pagination */
 let relatedImageArr = [];
@@ -8,7 +10,6 @@ let relatedImageArr = [];
 exports.getPosts =async (req, res, next)=>{
      const currentPage = req.query.page;
      const perPage = req.query.perPage;
-
      try{
           if(currentPage && perPage){
                let posts = await Posts.find()
@@ -49,6 +50,22 @@ exports.getPosts =async (req, res, next)=>{
      }catch(err){
           console.log(err);
      }
+}
+
+exports.getPost = async (req, res, next)=>{
+     const pId = req.params.pId;
+     try{
+          let post = await Posts.findById(pId);
+               if(!post){
+                    return res.status(404).json({message: "Post Not Found!"});
+               }
+               res.status(200).json({message: "Success", post: post});
+     }catch(err){
+          const error = new Error(err);
+          error.httpStatusCode = 500;
+          return next(error);
+     }
+
 }
 
 exports.createPost = (req, res, next)=>{
@@ -212,4 +229,30 @@ exports.editPost = (req, res, next)=>{
           .catch(err=>{
                console.log(err);
           })
+}
+
+exports.postComment = async (req, res, next)=>{
+     const postId = req.body.postId;
+     const userId = req.body.userId;
+     const name = req.body.name;
+     const userComment = req.body.comment;
+
+     try{
+          const comment = new Comments({
+               userId: userId,
+               itemId: postId,
+               name: name,
+               comment: userComment
+          });
+          await comment.save();
+
+          res.status(201).json({
+               message: "Post Comment",
+          });
+
+     }catch(err){
+          const error = new Error(err);
+          error.httpStatusCode = 500;
+          return next(error);
+     }
 }

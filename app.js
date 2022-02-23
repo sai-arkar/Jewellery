@@ -9,6 +9,8 @@ const mongoose = require("mongoose");
 const session = require("express-session");
 const MongoDBStore = require('connect-mongodb-session')(session);
 const socket = require("socket.io");
+const helmet = require("helmet");
+const compression = require("compression");
 
 let port = 8080;
 
@@ -39,6 +41,8 @@ const errorController = require("./controllers/error");
 const isAuth = require("./middleware/is-auth");
 
 app.use(cors());
+// app.use(helmet());
+app.use(compression());
 
 app.use(bodyParser.json());
 app.use(express.urlencoded({extended : false}));
@@ -86,11 +90,13 @@ app.use('/admin', adminRoutes);
 app.use('/api', appUserRoutes);
 app.use('/api', appUserPost);
 
-app.use(errorController.get404);
 app.get('/500', isAuth, errorController.get500);
+app.use(errorController.get404);
 
 app.use((error, req, res, next)=>{
-     res.status(500).render('500');
+     res.status(500).render('500', {
+          pageTitle: 'Internal Server Error!'
+     });
 })
    
 

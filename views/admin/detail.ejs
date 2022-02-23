@@ -33,10 +33,39 @@
                 </div>
                 <hr class="dark horizontal">
                 <div class="card-body pt-3">
-                  <p class="mb-4">
+                  <h3 class="mb-4 text-dark ">
                     <%= item.description %>
-                  </p>
-                  <img alt="Image placeholder" src="/<%= item.image %>" class="img-fluid border-radius-lg shadow-lg">
+                  </h3>
+
+                  <div id="carouselExampleControls" class="carousel slide" data-bs-ride="carousel">
+                    <div class="carousel-inner mb-4">
+                      <div class="carousel-item active">
+                        <div>
+                        <img alt="Image placeholder" src="/<%= item.image %>" class="img-fluid border-radius-lg">
+                        </div>
+                      </div>
+                      <% for(let i = 0; i < item.relatedImg.length; i++){ %>
+                        <div class="carousel-item">
+                          <div>
+                          <img alt="Image placeholder" src="/<%= item.relatedImg[i] %>" class="img-fluid border-radius-lg">
+                          </div>
+                        </div>
+                      <% } %>
+                      
+                    </div>
+
+                    <div class="min-vh-75 position-absolute w-100 top-0">
+                      <a class="carousel-control-prev" href="#carouselExampleControls" role="button" data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon position-absolute bottom-50" aria-hidden="true"></span>
+                        <span class="visually-hidden">Previous</span>
+                      </a>
+                      <a class="carousel-control-next" href="#carouselExampleControls" role="button" data-bs-slide="next">
+                        <span class="carousel-control-next-icon position-absolute bottom-50" aria-hidden="true"></span>
+                        <span class="visually-hidden">Next</span>
+                      </a>
+                    </div>
+                  </div>
+
                   <div class="row align-items-center px-2 mt-4 mb-2">
                     <div class="col-sm-6">
                       <div class="d-flex">
@@ -110,3 +139,5 @@
   <script src="/js/comment/comment.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.25.3/moment.min.js"></script>
   <%- include('../includes/end.ejs') %>
+
+  <!-- <img alt="Image placeholder" src="/<%= item.image %>" class="img-fluid border-radius-lg shadow-lg"> -->

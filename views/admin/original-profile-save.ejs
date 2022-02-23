@@ -1,0 +1,140 @@
+<%- include('../includes/head.ejs') %>
+
+<%- include('../includes/navigation.ejs', {user: user}) %>
+
+
+  <div class="main-content position-relative max-height-vh-100 h-100">
+    <!-- Navbar -->
+    <nav class="navbar navbar-main navbar-expand-lg px-0 mx-4 shadow-none border-radius-xl" id="navbarBlur" navbar-scroll="true">
+     <div class="container-fluid py-1 px-3">
+       <div class="collapse navbar-collapse mt-sm-0 mt-2 me-md-0 me-sm-4" id="navbar">
+       </div>
+     </div>
+   </nav>
+   <!-- End Navbar -->
+    <div class="container-fluid px-2 px-md-4">
+      <div class="page-header min-height-300 border-radius-xl mt-4" style="background-image: url('https://images.unsplash.com/photo-1531512073830-ba890ca4eba2?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&q=80');">
+        <span class="mask  bg-gradient-primary  opacity-6"></span>
+      </div>
+      <div class="card card-body mx-3 mx-md-4 mt-n6">
+          <div class="row mt-4">
+            <div class="col-12 col-lg-8">
+              <div class="card card-plain">
+                <div class="card-header d-flex align-items-center py-3">
+                  <div class="d-block d-md-flex align-items-center">
+                    <a href="javascript:;">
+                      <img src="/img/team-4.jpg" class="avatar" alt="profile-image">
+                    </a>
+                    <div class="mx-0 mx-md-3">
+                      <h3 class="text-dark font-weight-600 text-lg"><%= user %></h3>
+                      <small class="d-block text-muted">3 days ago</small>
+                    </div>
+                  </div>
+                </div>
+                <hr class="dark horizontal">
+                <div class="card-body pt-3">
+                  <h3 class="mb-4 text-dark ">
+                    <%= item.description %>
+                  </h3>
+                  <div id="carouselExampleControls" class="carousel slide" data-bs-ride="carousel">
+                    <div class="carousel-inner mb-4">
+                      <div class="carousel-item active">
+                        <div>
+                        <img alt="Image placeholder" src="/<%= item.image %>" class="img-fluid border-radius-lg">
+                        </div>
+                      </div>
+                      <% for(let i = 0; i < item.relatedImg.length; i++){ %>
+                        <div class="carousel-item">
+                          <div>
+                          <img alt="Image placeholder" src="/<%= item.relatedImg[i] %>" class="img-fluid border-radius-lg">
+                          </div>
+                        </div>
+                      <% } %>
+                      
+                    </div>
+                    <div class="min-vh-75 position-absolute w-100 top-0">
+                      <a class="carousel-control-prev" href="#carouselExampleControls" role="button" data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon position-absolute bottom-50" aria-hidden="true"></span>
+                        <span class="visually-hidden">Previous</span>
+                      </a>
+                      <a class="carousel-control-next" href="#carouselExampleControls" role="button" data-bs-slide="next">
+                        <span class="carousel-control-next-icon position-absolute bottom-50" aria-hidden="true"></span>
+                        <span class="visually-hidden">Next</span>
+                      </a>
+                    </div>
+                  </div>
+                  <div class="row align-items-center px-2 mt-4 mb-2">
+                    <div class="col-sm-6">
+                      <div class="d-flex">
+                        
+                        <a data-bs-toggle="collapse" href="#somethings" class="nav-link d-flex align-items-center collapse text-dark active" aria-controls="somethings" role="button" aria-expanded="false">
+                          <i class="material-icons text-sm me-1 cursor-pointer">mode_comment</i>
+                          <span class="text-sm me-3"><%= comments.length %> Comments</span>
+                        </a>
+                        
+                      </div>
+                    </div>
+                    <hr class="horizontal dark my-3">
+                  </div>
+              
+                  <!-- Comments -->
+                  <div class="typing " id="">
+
+                    <div class="mb-1 comment__box">
+
+                      <% if(comments.length > 0){%>
+                        <% for(let comment of comments) {%>
+                          <!-- Start One Comment -->
+                      <div class="bg-gradient-light bg-opacity-10 border-radius-lg border-0  mt-2">
+                        <div class="flex-grow-1 ms-3">
+                          <h6 class="h5 mt-0"><%= comment.name %></h6>
+                          <p class="text-sm"><%= comment.comment %></p>
+                          <div class="d-flex">
+                            <small><%= time %></small>
+                           </div>
+                        </div>
+                      </div>
+                      <!-- End One Comment -->
+                        <% } %>
+                      <% } %>
+
+                    </div>
+                  </div>
+
+                    <form action="/admin/comment" method="post">
+                      <div class="d-flex mt-4">
+                        <div class="flex-shrink-0">
+                          <img alt="Image placeholder" class="avatar rounded-circle me-3" src="/img/team-4.jpg">
+                        </div>
+                        <div class="flex-grow-1 my-auto">
+                          <div class="input-group input-group-static">
+                            <textarea id="textarea" class="form-control" placeholder="Write your comment" rows="4" spellcheck="false" name="comment"></textarea>
+                          </div>
+                        </div>
+                        <input class="itemId" type="hidden" name="itemId" value="<%= item._id %>">
+                        <input class="username" type="hidden" name="username" value="<%= userInfo.name %>">
+                        
+  
+                        <button type="submit" id="submitBtn" class="btn bg-gradient-primary btn-sm mt-auto mb-0 ms-2"  name="button"><i class="material-icons text-sm">send</i></button>
+                      </div>
+                    </form>
+
+                </div>
+              </div>
+            </div>
+            
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Socket -->
+  
+  <!--   Core JS Files   -->
+  <script src="/js/comment/comment.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.25.3/moment.min.js"></script>
+  <%- include('../includes/end.ejs') %>
+
+  <!-- <img alt="Image placeholder" src="/<%= item.image %>" class="img-fluid border-radius-lg shadow-lg"> -->

@@ -89,8 +89,8 @@
                             
                             <div class="input-group input-group-static">
                               <label >Password</label>
-                              <input 
-                              class="multisteps-form__input form-control <%= validationErrors.find(e => e.param ==='password')? 'text-danger font-weight-bold' : '' %>" 
+                              <input id="password"
+                              class=" multisteps-form__input form-control  <%= validationErrors.find(e => e.param ==='password')? 'text-danger font-weight-bold' : '' %>" 
                               type="password" 
                               name="password" value="<%= oldInput.password %>"
                               />
@@ -99,13 +99,20 @@
                           <div class="col-12 col-sm-6 mt-3 mt-sm-0">
                             <div class="input-group input-group-static">
                               <label >Repeat Password</label>
-                              <input 
-                              class="multisteps-form__input form-control <%= validationErrors.find(e => e.param ==='confirmPassword')? 'text-danger font-weight-bold' : '' %>" 
+                              <input id="conPass"
+                              class="multisteps-form__input form-control  <%= validationErrors.find(e => e.param ==='confirmPassword')? 'text-danger font-weight-bold' : '' %>" 
                               type="password" 
                               name="confirmPassword" value="<%= oldInput.confirmPassword %>"/>
                             </div>
                           </div>
                         </div>
+
+                        <div class=" button-row d-flex mt-4 form-check">
+                          <div class="input-group input-group-static">
+                            <input type="checkbox" class="form-check-input" checked="" onclick="myFunction()">Show Password
+                          </div>
+                        </div>
+
                         <div class="button-row d-flex mt-4">
                           <%if(editing){%>
                             <input type="hidden" name="eId" value="<%= employee._id %>">
@@ -128,6 +135,19 @@
 </main>
 
   <!--   Core JS Files   -->
+  <script>
+    function myFunction() {
+      let x = document.getElementById("password");
+      let y = document.getElementById("conPass");
+      if (x.type === "password" && y.type === "password") {
+        x.type = "text";
+        y.type = "text";
+      } else {
+        x.type = "password";
+        y.type = "password"
+      }
+    }
+  </script>
   <script src="/js/delete-role.js"></script>
   
   <%- include('../includes/end.ejs') %>

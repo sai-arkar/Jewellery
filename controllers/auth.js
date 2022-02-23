@@ -21,7 +21,7 @@ exports.getSignin = (req, res, next)=>{
      });
 }
 
-exports.postSignIn = (req, res, next)=>{
+exports.postSignIn = async (req, res, next)=>{
      const email = req.body.email;
      const password = req.body.password;
      const errors = validationResult(req);
@@ -39,8 +39,9 @@ exports.postSignIn = (req, res, next)=>{
           });
      }
 
-     Users.findOne({email : email})
-          .then(user =>{
+     try{
+
+          let user = await Users.findOne({email : email});
                if(!user){
                     return res.status(422).render("auth/sign-in",{
                          pageTitle: "Sign In",
@@ -53,39 +54,39 @@ exports.postSignIn = (req, res, next)=>{
                          showInfo: showInfo
                     })
                }
-               bcrypt.compare(password, user.password)
-                    .then(doMatch=>{
+          let doMatch = await bcrypt.compare(password, user.password);
 
-                         showInfo = false;
+               showInfo = false;
 
-                         if(doMatch){
-                              req.session.isLoggedIn = true;
-                              if(user.status === 'super'){
-                                   req.session.isSuperAdmin = true;
-                              }
-                              req.session.user = user;
-                              return req.session.save(err=>{
-                                   console.log(err);
-                                   console.log("Login Successful");
-                                   res.redirect("/admin/dashboard");
-                              })
-                         }
-                         return res.status(422).render("auth/sign-in", {
-                              pageTitle: "Sign In",
-                              errorMessage: "Incorret Password", 
-                              oldInput: {
-                                   email: email,
-                                   password: password
-                              },
-                              validationErrors: errors.array(),
-                              showInfo: showInfo,
-                              red: true
-                         })
+               if(doMatch){
+                    req.session.isLoggedIn = true;
+                    if(user.status === 'super'){
+                         req.session.isSuperAdmin = true;
+                    }
+                    req.session.user = user;
+                    return await req.session.save(err=>{
+                         console.log(err);
+                         console.log("Login Successful");
+                         res.redirect("/admin/dashboard");
                     })
-          })
-          .catch(err=>{
-               console.log(err);
-          })
+               }
+               return res.status(422).render("auth/sign-in", {
+                    pageTitle: "Sign In",
+                    errorMessage: "Incorret Password", 
+                    oldInput: {
+                         email: email,
+                         password: password
+                    },
+                    validationErrors: errors.array(),
+                    showInfo: showInfo,
+                    red: true
+               })
+     }catch(err){
+          const error = new Error(err);
+          error.httpStatusCode = 500;
+          return next(error);
+     }
+
 }
 
 /* Session Destroy */
@@ -107,7 +108,7 @@ exports.getReset = (req, res, next)=>{
      });
 }
 
-exports.postReset = (req, res, next)=>{
+exports.postReset = async(req, res, next)=>{
      const errors = validationResult(req);
 
      if(!errors.isEmpty()){
@@ -121,56 +122,55 @@ exports.postReset = (req, res, next)=>{
           });
      }
 
-     crypto.randomBytes(32, (err, buffer)=>{
-          if(err){
-               console.log(err);
-               return res.redirect("/reset");
-          }
-          const token = buffer.toString('hex');
-          
-          Users.findOne({email : req.body.email})
-               .then(user =>{
-                    if(!user){
-                         return res.redirect("/reset");
-                    }
-                    user.resetToken = token;
-                    user.resetTokenExpiration = Date.now() + 3600000;
-                    return user.save();
-               })
-               .then(result =>{
-                    showInfo = true;
-                    res.redirect("/");
-                    const msg = {
-                         to: req.body.email, // Change to your recipient
-                         from: 'saiscript.digit@gmail.com', // Change to your verified sender
-                         subject: 'Password Reset',
-                         html: `
-                              <h1>You requested a password reset</h1>
-                              <h3>Click this <a href="http://localhost:8080/reset/${token}">link</h3> to set a new password!</p>
-                              `
-                       };
-
-                    sgMail
-                       .send(msg)
-                       .then((response) => {
-                         console.log(response[0].statusCode)
-                         console.log(response[0].headers)
-                       })
-                       .catch((error) => {
-                         console.error(error)
-                       })
-               })
-               .catch(err =>{
+     try{
+          await crypto.randomBytes(32, async (err, buffer)=>{
+               if(err){
                     console.log(err);
-               })
-     });
+                    return res.redirect("/reset");
+               }
+               const token = buffer.toString('hex');
+               
+               let user = await Users.findOne({email : req.body.email})
+                         if(!user){
+                              return res.redirect("/reset");
+                         }
+                         user.resetToken = token;
+                         user.resetTokenExpiration = Date.now() + 3600000;
+                    await user.save();
+                         showInfo = true;
+                         res.redirect("/");
+                         const msg = {
+                              to: req.body.email, // Change to your recipient
+                              from: 'saiscript.digit@gmail.com', // Change to your verified sender
+                              subject: 'Password Reset',
+                              html: `
+                                   <h1>You requested a password reset</h1>
+                                   <h3>Click this <a href="http://localhost:8080/reset/${token}">link</h3> to set a new password!</p>
+                                   `
+                            };
+     
+                         sgMail
+                            .send(msg)
+                            .then((response) => {
+                              console.log(response[0].statusCode)
+                              console.log(response[0].headers)
+                            })
+                            .catch((error) => {
+                              console.error(error)
+                            })
+          });
+     }catch(err){
+          const error = new Error(err);
+          error.httpStatusCode = 500;
+          return next(error);
+     }
 }
 
-exports.getNewPassword = (req, res, next)=>{
+exports.getNewPassword = async (req, res, next)=>{
      const token = req.params.token;
-     Users.findOne({resetToken: token, resetTokenExpiration: {$gt: Date.now()}})
-          .then(user=>{
-               
+
+     try{
+          let user = await Users.findOne({resetToken: token, resetTokenExpiration: {$gt: Date.now()}})
                res.render('auth/new-password', {
                     pageTitle: "New Password", 
                     userId: user._id.toString(),
@@ -183,13 +183,14 @@ exports.getNewPassword = (req, res, next)=>{
                     },
                     validationErrors: []
                })
-          })
-          .catch(err =>{
-               console.log(err);
-          })
+     }catch(err){
+          const error = new Error(err);
+          error.httpStatusCode = 500;
+          return next(error);
+     }
 }
 
-exports.postNewPassword = (req, res, next)=>{
+exports.postNewPassword = async (req, res, next)=>{
      const currentPass = req.body.currentPassword;
      const newPass = req.body.newPassword;
      const confirmPass = req.body.confirmPassword;
@@ -216,27 +217,29 @@ exports.postNewPassword = (req, res, next)=>{
 
      let resetUser;
 
-     Users.findOne({
-          resetToken: passwordToken, 
-          resetTokenExpiration:{$gt: Date.now()},
-          _id: userId
-        })
-        .then(user =>{ // User.findOne
+     try{
+          let user = await Users.findOne({
+               resetToken: passwordToken, 
+               resetTokenExpiration:{$gt: Date.now()},
+               _id: userId
+             });
+          // User.findOne
           resetUser = user
-          return bcrypt.hash(newPass, 12)
-        })
-        .then(hashedPassword =>{ // bcrypt.hash()
-          resetUser.password = hashedPassword;
-          resetUser.resetToken = undefined;
-          resetUser.resetTokenExpiration = undefined;
-          return resetUser.save();
-        })
-        .then(result =>{ // resetUser.save()
-          console.log("Changed Password!");
-          res.redirect('/');
-        })
-        .catch(err =>{
-          console.log(err);
-        })
+          let hashedPassword = await bcrypt.hash(newPass, 12);
+          // bcrypt.hash()
+               resetUser.password = hashedPassword;
+               resetUser.resetToken = undefined;
+               resetUser.resetTokenExpiration = undefined;
+
+          await resetUser.save();
+           // resetUser.save()
+               showInfo = false;
+               console.log("Changed Password!");
+               res.redirect('/');
+     }catch(err){
+          const error = new Error(err);
+          error.httpStatusCode = 500;
+          return next(error);
+     }
 }
       
