@@ -18,7 +18,7 @@ exports.postSignUp = (req, res, next)=>{
                if(user){
                     return res.status(200).json({
                          message: "Email Already Exist!",
-                         user: user
+                         error: true
                     })
                }
                bcrypt.hash(password, 12)
