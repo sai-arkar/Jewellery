@@ -83,7 +83,7 @@ exports.getUser = (req, res, next)=>{
                if(!user){
                     return res.status(200).json({ message : "User Not Found!", error: true});
                }
-               Items.find({userId: uId})
+               Items.find({userId: uId}).populate('categoryId')
                     .then(items=>{
                          res.status(200).json({
                               info:{
