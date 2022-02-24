@@ -311,11 +311,18 @@ exports.getApprovedItems = async(req, res, next)=>{
           return res.status(404).redirect('/');
      }
 
-     let getItems;
+     let getItems = [];
      
      try{
           let resultItems = await Items.find().populate('categoryId');
-               getItems = resultItems;
+               
+               resultItems.map(item=>{
+                    if(item.state == true){
+                         getItems.push(item);
+                    }
+               })
+               console.log(getItems);
+               
           let cateResult = await Categories.find();
                res.status(201).render('admin/approved-items', {
                     pageTitle : "Approved Items",
@@ -426,22 +433,24 @@ exports.getEditItem = async (req, res, next)=>{
      
      try{
           let item = await Items.findById(itemId);
-               if(item.userId.toString() !== req.user._id.toString()
-               || req.user._id.toString() !== '62031c692c2300baf01541f2'){
+          getItems = item;
+               if(item.userId.toString() === req.user._id.toString()
+               || req.user._id.toString() === '62031c692c2300baf01541f2'){
+                    let categories = await Categories.find();
+                    res.status(201).render('admin/add-item', {
+                         pageTitle : "Edit Item",
+                         editing : editMode,
+                         adding : false,
+                         item : getItems,
+                         categories : categories,
+                         user : req.user.name,
+                         path: '/admin/add-item'
+                    });
+               }else{
                     console.log("Not Authorized!");
                     return res.redirect("/admin/all-items");
                }
-               getItems = item;
-               let categories = await Categories.find();
-                         res.status(201).render('admin/add-item', {
-                              pageTitle : "Edit Item",
-                              editing : editMode,
-                              adding : false,
-                              item : getItems,
-                              categories : categories,
-                              user : req.user.name,
-                              path: '/admin/add-item'
-                         })
+               
      }catch(err){
           const error = new Error(err);
           error.httpStatusCode = 500;
@@ -473,35 +482,39 @@ exports.postEditItem = async (req, res, next)=>{
                if(!item){
                     return res.redirect('/admin/all-items');
                }
-               if(item.userId.toString() !== req.user._id.toString()
-               || req.user._id.toString() !== '62031c692c2300baf01541f2'){
+               if(item.userId.toString() === req.user._id.toString()
+               || req.user._id.toString() === '62031c692c2300baf01541f2'){
+
+                    item.categoryId = categoryId;
+                    item.title = updatedTitle;
+                    item.price = updatedPrice;
+                    item.description = updatedDes;
+                    if(image){
+                         fileHelper.deleteFile(item.image);
+                         item.image = image[0].path;
+                    }
+                    if(updateRImage){
+                         item.relatedImg.map(path=>{
+                              fileHelper.deleteFile(path);
+                         })
+                         item.relatedImg = updateRImageArr;
+                    }
+                    item.state = false;
+
+                    await item.save();
+
+                    if(updateRImage){
+                         relatedImageArr = updateRImageArr;
+                    }
+                    
+                    console.log("Updated Item");
+                    res.status(300).redirect("/admin/all-items");
+
+               }else{
                     console.log("Not Authorized!");
                     return res.redirect("/admin/all-items");
                }
-               item.categoryId = categoryId;
-               item.title = updatedTitle;
-               item.price = updatedPrice;
-               item.description = updatedDes;
-               if(image){
-                    fileHelper.deleteFile(item.image);
-                    item.image = image[0].path;
-               }
-               if(updateRImage){
-                    item.relatedImg.map(path=>{
-                         fileHelper.deleteFile(path);
-                    })
-                    item.relatedImg = updateRImageArr;
-               }
-               item.state = false;
-
-               await item.save();
-
-               if(updateRImage){
-                    relatedImageArr = updateRImageArr;
-               }
                
-               console.log("Updated Item");
-               res.status(300).redirect("/admin/all-items");
      }catch(err){
           const error = new Error(err);
           error.httpStatusCode = 500;

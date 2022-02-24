@@ -12,7 +12,7 @@ exports.getPosts =async (req, res, next)=>{
      const perPage = req.query.perPage;
      try{
           if(currentPage && perPage){
-               let posts = await Posts.find()
+               let posts = await Posts.find().populate('categoryId')
                               .skip((currentPage -1)* perPage)
                               .limit(perPage);
                
@@ -55,7 +55,7 @@ exports.getPosts =async (req, res, next)=>{
 exports.getPost = async (req, res, next)=>{
      const pId = req.params.pId;
      try{
-          let post = await Posts.findById(pId);
+          let post = await Posts.findById(pId).populate('categoryId');
           let comments = await Comments.find({itemId: pId});
                if(!post){
                     return res.status(200).json({message: "Post Not Found!"});
