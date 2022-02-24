@@ -23,6 +23,23 @@ exports.getCategories = async (req, res, next)=>{
      }
 }
 
+exports.getCategoryItems = async (req, res, next)=>{
+     const cateId = req.params.cateId;
+
+     try{
+          let items = await Posts.find({categoryId: cateId});
+               res.status(200).json({
+                    message: "Category's Items",
+                    items: items
+               });
+     }catch(err){
+          const error = new Error(err);
+          error.httpStatusCode = 500;
+          return next(error);
+     }
+     
+}
+
 exports.getPosts =async (req, res, next)=>{
      const currentPage = req.query.page;
      const perPage = req.query.perPage;

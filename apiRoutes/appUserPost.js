@@ -8,6 +8,9 @@ const cpUpload = require("../middleware/multer");
 /* Get All Categories */
 router.get("/categories", appUserPostController.getCategories);
 
+/* Get One Category and it's items */
+router.get("/category/:cateId", appUserPostController.getCategoryItems);
+
 /* Get Posts */
 router.get("/posts", appUserPostController.getPosts);
 
