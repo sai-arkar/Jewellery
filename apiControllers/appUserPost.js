@@ -7,6 +7,22 @@ const { selectFields } = require( "express-validator/src/select-fields" );
 let approvedPosts = []; /* To Store All Post for Pagination */
 let relatedImageArr = [];
 
+
+exports.getCategories = async (req, res, next)=>{
+
+     try{
+          let categories = await Categories.find();
+          res.status(200).json({
+               message: "ALL Categories",
+               categories: categories
+          })
+     }catch(err){
+          const error = new Error(err);
+          error.httpStatusCode = 500;
+          return next(error);
+     }
+}
+
 exports.getPosts =async (req, res, next)=>{
      const currentPage = req.query.page;
      const perPage = req.query.perPage;
@@ -48,7 +64,9 @@ exports.getPosts =async (req, res, next)=>{
           
 
      }catch(err){
-          console.log(err);
+          const error = new Error(err);
+          error.httpStatusCode = 500;
+          return next(error);
      }
 }
 

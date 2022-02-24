@@ -5,6 +5,9 @@ const router = express.Router();
 const appUserPostController = require("../apiControllers/appUserPost");
 const cpUpload = require("../middleware/multer");
 
+/* Get All Categories */
+router.get("/categories", appUserPostController.getCategories);
+
 /* Get Posts */
 router.get("/posts", appUserPostController.getPosts);
 
