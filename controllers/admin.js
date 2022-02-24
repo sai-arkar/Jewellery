@@ -270,7 +270,8 @@ exports.declineItem = async (req, res, next)=>{
                          fileHelper.deleteFile(path);
                     })
 
-                    const result = await Items.deleteOne({_id:itemId})
+                    await Comments.deleteMany({itemId: itemId});
+                    await Items.deleteOne({_id:itemId})
                          res.status(200).json({ message : 'Success!'});
                          console.log("Deleted Item!");
                }else{

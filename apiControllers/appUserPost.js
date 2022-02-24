@@ -56,10 +56,15 @@ exports.getPost = async (req, res, next)=>{
      const pId = req.params.pId;
      try{
           let post = await Posts.findById(pId);
+          let comments = await Comments.find({itemId: pId});
                if(!post){
-                    return res.status(404).json({message: "Post Not Found!"});
+                    return res.status(200).json({message: "Post Not Found!"});
                }
-               res.status(200).json({message: "Success", post: post});
+               res.status(200).json({
+                    message: "Success", 
+                    post: post,
+                    comments: comments
+               });
      }catch(err){
           const error = new Error(err);
           error.httpStatusCode = 500;
@@ -79,7 +84,7 @@ exports.createPost = (req, res, next)=>{
      const relatedImage = req.files.relatedImage;
 
      if(!req.files){
-          return res.status(422).json({message: "Image Must Be Include"});;
+          return res.status(200).json({message: "Image Must Be Include"});;
      }
 
      relatedImageArr = new Array();
@@ -127,10 +132,14 @@ exports.deletePost = (req, res, next)=>{
                          fileHelper.deleteFile(path);
                     })
 
-                    Posts.deleteOne({_id:postId})
+                    Comments.deleteMany({itemId: postId})
                          .then(()=>{
-                              res.status(200).json({ message : 'Success!'});
+                              Posts.deleteOne({_id:postId})
+                                   .then(()=>{
+                                        res.status(200).json({ message : 'Success!'});
+                                   })
                          })
+                    
                }else{
                     console.log("Not Authorized!");
                     return res.redirect("/admin/all-items");
@@ -150,13 +159,13 @@ exports.getEditPost = (req, res, next)=>{
     
      let getPosts;
      if(!editMode){
-          return res.status(404).json({ message: "Can't Edit"});
+          return res.status(200).json({ message: "Can't Edit"});
      }
      Posts.findById(postId)
           .then(post =>{
                
                if(post.userId.toString() !== userId.toString()){
-                    return res.status(401).json({ message: "Not Authorized!"});
+                    return res.status(200).json({ message: "Not Authorized!"});
                }
                getPosts = post;
                Categories.find()
@@ -196,10 +205,10 @@ exports.editPost = (req, res, next)=>{
      Posts.findById(postId)
           .then(post =>{
                if(!post){
-                    return res.status(404).json({ message: "Post Not Found!"});
+                    return res.status(200).json({ message: "Post Not Found!"});
                }
                if(post.userId.toString() !== userId.toString()){
-                    return res.status(401).json({ message: "Not Authorized!"});
+                    return res.status(200).json({ message: "Not Authorized!"});
                }
                post.categoryId = categoryId;
                post.title = updatedTitle;

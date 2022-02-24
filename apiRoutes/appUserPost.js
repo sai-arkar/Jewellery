@@ -8,7 +8,7 @@ const cpUpload = require("../middleware/multer");
 /* Get Posts */
 router.get("/posts", appUserPostController.getPosts);
 
-/* Get Post */
+/* Get Post and Post's comment */
 router.get("/post/:pId", appUserPostController.getPost);
 
 /* Add Post */

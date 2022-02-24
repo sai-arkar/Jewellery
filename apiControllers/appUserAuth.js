@@ -81,7 +81,7 @@ exports.getUser = (req, res, next)=>{
      AppUsers.findById(uId)
           .then(user=>{
                if(!user){
-                    return res.status(401).json({ message : "User Not Found!", error: true});
+                    return res.status(200).json({ message : "User Not Found!", error: true});
                }
                Items.find({userId: uId})
                     .then(items=>{
@@ -97,7 +97,9 @@ exports.getUser = (req, res, next)=>{
                
           })
           .catch(err =>{
-               console.log(err);
+               const error = new Error(err);
+               error.httpStatusCode = 500;
+               return next(error);
           });
 }
 
@@ -112,15 +114,23 @@ exports.getAllUserId = (req, res, next)=>{
                     result : userId
                })
           })
-          .catch(err => console.log(err));
+          .catch(err => {
+               const error = new Error(err);
+               error.httpStatusCode = 500;
+               return next(error);
+          });
 }
 
 exports.getAllUser = (req, res, next)=>{
      AppUsers.find()
           .then(result=>{
-               res.status(201).json({
+               res.status(200).json({
                     user : result
                })
           })
-          .catch(err => console.log(err));
+          .catch(err => {
+               const error = new Error(err);
+               error.httpStatusCode = 500;
+               return next(error);
+          });
 }

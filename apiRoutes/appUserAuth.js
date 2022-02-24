@@ -19,3 +19,4 @@ router.get("/all-uId", apiControllers.getAllUserId);
 router.get("/all-user", apiControllers.getAllUser);
 
 module.exports = router;
+
