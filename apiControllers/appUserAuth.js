@@ -1,4 +1,5 @@
 const AppUsers = require( "../models/appUsers" );
+const Categories = require("../models/categories");
 const Items = require("../models/items");
 
 const bcrypt = require("bcryptjs");
@@ -76,31 +77,63 @@ exports.postLogin = (req, res, next)=>{
 }
 
 
-exports.getUser = (req, res, next)=>{
+exports.getUser = async (req, res, next)=>{
      const uId = req.params.uid;
-     AppUsers.findById(uId)
-          .then(user=>{
+     
+     try{
+          let user = await AppUsers.findById(uId);
                if(!user){
                     return res.status(200).json({ message : "User Not Found!", error: true});
                }
-               Items.find({userId: uId}).populate('categoryId')
-                    .then(items=>{
-                         res.status(200).json({
-                              info:{
-                                   userId: user._id,
-                                   name: user.name,
-                                   email: user.email,
-                              },
-                              items: items
+          let items = await Items.find({userId: uId}).populate('categoryId');
+          let categories = await Categories.find();
+               res.status(200).json({
+                    info:{
+                         userId: user._id,
+                         name: user.name,
+                         email: user.email,
+                    },
+                    items: items,
+                    categories: categories
+               })
+          
+     }catch(err){
+          const error = new Error(err);
+          error.httpStatusCode = 500;
+          return next(error);
+     }
+}
+
+exports.postEditUser = async (req, res, next)=>{
+     const updatedName = req.body.name;
+     const updatedEmail = req.body.email;
+     const updatedPassword = req.body.password;
+     const userId = req.body.userId;
+
+     try{
+          let user = await AppUsers.findById(userId);
+               if(!user){
+                    return res.status(200).json({ message: "User Not Exist!" });
+               }
+               if(user._id.toString() === userId.toString()){
+                    let hashedPass = await bcrypt.hash(updatedPassword, 12);
+                         user.name = updatedName;
+                         user.email = updatedEmail;
+                         user.password = hashedPass;
+
+                         await user.save();
+                         res.status(201).json({
+                              message : "Update Success"
                          })
-                    })
-               
-          })
-          .catch(err =>{
-               const error = new Error(err);
-               error.httpStatusCode = 500;
-               return next(error);
-          });
+               }else{
+                    res.status(200).json({ message: "Not Authorized!"});
+               }
+     }catch(err){
+          const error = new Error(err);
+          error.httpStatusCode = 500;
+          return next(error);
+     }
+
 }
 
 exports.getAllUserId = (req, res, next)=>{

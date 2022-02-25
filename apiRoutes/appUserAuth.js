@@ -13,6 +13,9 @@ router.post("/auth/login", apiControllers.postLogin);
 /* Get User and user's items */
 router.get("/user/:uid", apiControllers.getUser);
 
+/* Edit User */
+router.post("/edit-user", apiControllers.postEditUser);
+
 /* Get All User's Id */
 router.get("/all-uId", apiControllers.getAllUserId);
 
