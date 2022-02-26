@@ -39,6 +39,6 @@ const itemSchema = new Schema({
           ref: 'Users',
           required: true
      }
-});
+}, {timestamps: true});
 
 module.exports = mongoose.model("Items", itemSchema);

@@ -85,7 +85,7 @@ exports.getUser = async (req, res, next)=>{
                if(!user){
                     return res.status(200).json({ message : "User Not Found!", error: true});
                }
-          let items = await Items.find({userId: uId}).populate('categoryId');
+          let items = await Items.find({userId: uId}).populate('categoryId').sort({createdAt: -1});
           let categories = await Categories.find();
                res.status(200).json({
                     info:{

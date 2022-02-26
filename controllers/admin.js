@@ -314,7 +314,7 @@ exports.getApprovedItems = async(req, res, next)=>{
      let getItems = [];
      
      try{
-          let resultItems = await Items.find().populate('categoryId');
+          let resultItems = await Items.find().populate('categoryId').sort({createdAt: -1});
                
                resultItems.map(item=>{
                     if(item.state == true){
@@ -348,7 +348,7 @@ exports.getAllItems = async (req, res, next)=>{
 
      let getItems;
      try{
-          let resultItems = await Items.find().populate('categoryId');
+          let resultItems = await Items.find().populate('categoryId').sort({createdAt: -1});
                getItems = resultItems;
           let cateResult = await Categories.find();
                res.status(201).render('admin/all-items', {
