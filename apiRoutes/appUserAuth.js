@@ -3,6 +3,7 @@ const express = require("express");
 const router = express.Router();
 
 const apiControllers = require("../apiControllers/appUserAuth");
+const isJwt = require("../middleware/is-jwt");
 
 router.get("/auth/sign-up", apiControllers.getSignup);
 
@@ -11,15 +12,15 @@ router.post("/auth/sign-up", apiControllers.postSignUp);
 router.post("/auth/login", apiControllers.postLogin);
 
 /* Get User and user's items */
-router.get("/user/:uid", apiControllers.getUser);
+router.get("/user/:uid", isJwt, apiControllers.getUser);
 
 /* Edit User */
-router.post("/edit-user", apiControllers.postEditUser);
+router.post("/edit-user", isJwt, apiControllers.postEditUser);
 
 /* Get All User's Id */
-router.get("/all-uId", apiControllers.getAllUserId);
+router.get("/all-uId", isJwt, apiControllers.getAllUserId);
 
-router.get("/all-user", apiControllers.getAllUser);
+router.get("/all-user", isJwt, apiControllers.getAllUser);
 
 module.exports = router;
 

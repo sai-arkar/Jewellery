@@ -4,32 +4,33 @@ const router = express.Router();
 
 const appUserPostController = require("../apiControllers/appUserPost");
 const cpUpload = require("../middleware/multer");
+const isJwt = require("../middleware/is-jwt");
 
 /* Get All Categories */
-router.get("/categories", appUserPostController.getCategories);
+router.get("/categories", isJwt, appUserPostController.getCategories);
 
 /* Get One Category and it's items */
-router.get("/category/:cateId", appUserPostController.getCategoryItems);
+router.get("/category/:cateId", isJwt, appUserPostController.getCategoryItems);
 
 /* Get Posts */
-router.get("/posts", appUserPostController.getPosts);
+router.get("/posts", isJwt, appUserPostController.getPosts);
 
 /* Get Post and Post's comment */
-router.get("/post/:pId", appUserPostController.getPost);
+router.get("/post/:pId", isJwt, appUserPostController.getPost);
 
 /* Add Post */
-router.post("/post", cpUpload, appUserPostController.createPost);
+router.post("/post", isJwt, cpUpload, appUserPostController.createPost);
 
 /* Get Edit Post */
-router.get("/edit-post/:postId/:userId", appUserPostController.getEditPost);
+router.get("/edit-post/:postId/:userId", isJwt, appUserPostController.getEditPost);
 
 /* Post Edit Post */
-router.post("/edit-post", cpUpload, appUserPostController.editPost);
+router.post("/edit-post", isJwt, cpUpload, appUserPostController.editPost);
 
 /* Comment */
-router.post("/comment", appUserPostController.postComment);
+router.post("/comment", isJwt, appUserPostController.postComment);
 
 /* Delete Post */
-router.delete("/post/:postId/:userId", appUserPostController.deletePost);
+router.delete("/post/:postId/:userId", isJwt, appUserPostController.deletePost);
 
 module.exports = router;

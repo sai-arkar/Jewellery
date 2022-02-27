@@ -2,7 +2,6 @@ const Posts = require("../models/items");
 const Categories = require("../models/categories");
 const Comments = require("../models/comments");
 const fileHelper = require("../middleware/file");
-const { selectFields } = require( "express-validator/src/select-fields" );
 
 let approvedPosts = []; /* To Store All Post for Pagination */
 let relatedImageArr = [];
@@ -17,9 +16,10 @@ exports.getCategories = async (req, res, next)=>{
                categories: categories
           })
      }catch(err){
-          const error = new Error(err);
-          error.httpStatusCode = 500;
-          return next(error);
+          if(!err.statusCode){
+               err.statusCode = 500;
+          }
+          next(err);
      }
 }
 
@@ -33,9 +33,10 @@ exports.getCategoryItems = async (req, res, next)=>{
                     items: items
                });
      }catch(err){
-          const error = new Error(err);
-          error.httpStatusCode = 500;
-          return next(error);
+          if(!err.statusCode){
+               err.statusCode = 500;
+          }
+          next(err);
      }
      
 }
@@ -81,9 +82,10 @@ exports.getPosts =async (req, res, next)=>{
           
 
      }catch(err){
-          const error = new Error(err);
-          error.httpStatusCode = 500;
-          return next(error);
+          if(!err.statusCode){
+               err.statusCode = 500;
+          }
+          next(err);
      }
 }
 
@@ -93,7 +95,9 @@ exports.getPost = async (req, res, next)=>{
           let post = await Posts.findById(pId).populate('categoryId');
           let comments = await Comments.find({itemId: pId});
                if(!post){
-                    return res.status(200).json({message: "Post Not Found!"});
+                    const error = new Error('Post Not Found');
+                    error.statusCode = 404;
+                    throw error;
                }
                res.status(200).json({
                     message: "Success", 
@@ -101,9 +105,10 @@ exports.getPost = async (req, res, next)=>{
                     comments: comments
                });
      }catch(err){
-          const error = new Error(err);
-          error.httpStatusCode = 500;
-          return next(error);
+          if(!err.statusCode){
+               err.statusCode = 500;
+          }
+          next(err);
      }
 
 }
@@ -119,7 +124,9 @@ exports.createPost = (req, res, next)=>{
      const relatedImage = req.files.relatedImage;
 
      if(!req.files){
-          return res.status(200).json({message: "Image Must Be Include"});;
+          const error = new Error('Image Mush Be Include!');
+          error.statusCode = 409;
+          throw error;
      }
 
      relatedImageArr = new Array();
@@ -145,7 +152,10 @@ exports.createPost = (req, res, next)=>{
                })
           })
           .catch(err=>{
-               console.log(err);
+               if(!err.statusCode){
+                    err.statusCode = 500;
+               }
+               next(err);
           })
 }
 
@@ -156,7 +166,9 @@ exports.deletePost = (req, res, next)=>{
      Posts.findById(postId)
           .then(post=>{
                if(!post){
-                    return next(new Error('post Not Found!'));
+                    const error = new Error('Post Not Found!');
+                    error.statusCode = 404;
+                    throw error;
                }
 
                if(post.userId.toString() === userId.toString()){
@@ -176,13 +188,17 @@ exports.deletePost = (req, res, next)=>{
                          })
                     
                }else{
-                    console.log("Not Authorized!");
-                    return res.redirect("/admin/all-items");
+                    const error = new Error('Not Authorized!');
+                    error.statusCode = 403;
+                    throw error;
                }
                
           })
           .catch(err=>{
-               console.log(err);
+               if(!err.statusCode){
+                    err.statusCode = 500;
+               }
+               next(err);
           })
 }
 
@@ -194,13 +210,17 @@ exports.getEditPost = (req, res, next)=>{
     
      let getPosts;
      if(!editMode){
-          return res.status(200).json({ message: "Can't Edit"});
+          const error = new Error('Not Authorized!');
+          error.statusCode = 403;
+          throw error;
      }
      Posts.findById(postId)
           .then(post =>{
                
                if(post.userId.toString() !== userId.toString()){
-                    return res.status(200).json({ message: "Not Authorized!"});
+                    const error = new Error('Not Authorized!');
+                    error.statusCode = 403;
+                    throw error;
                }
                getPosts = post;
                Categories.find()
@@ -214,7 +234,10 @@ exports.getEditPost = (req, res, next)=>{
                     })
           })
           .catch(err=>{
-               console.log(err);
+               if(!err.statusCode){
+                    err.statusCode = 500;
+               }
+               next(err);
           })
 }
 
@@ -240,10 +263,14 @@ exports.editPost = (req, res, next)=>{
      Posts.findById(postId)
           .then(post =>{
                if(!post){
-                    return res.status(200).json({ message: "Post Not Found!"});
+                    const error = new Error('Post Not Found!');
+                    error.statusCode = 404;
+                    throw error;
                }
                if(post.userId.toString() !== userId.toString()){
-                    return res.status(200).json({ message: "Not Authorized!"});
+                    const error = new Error('Not Authorized!');
+                    error.statusCode = 403;
+                    throw error;
                }
                post.categoryId = categoryId;
                post.title = updatedTitle;
@@ -271,7 +298,10 @@ exports.editPost = (req, res, next)=>{
                res.status(201).json("Edited Successfully!");
           })
           .catch(err=>{
-               console.log(err);
+               if(!err.statusCode){
+                    err.statusCode = 500;
+               }
+               next(err);
           })
 }
 
@@ -295,8 +325,9 @@ exports.postComment = async (req, res, next)=>{
           });
 
      }catch(err){
-          const error = new Error(err);
-          error.httpStatusCode = 500;
-          return next(error);
+          if(!err.statusCode){
+               err.statusCode = 500;
+          }
+          next(err);
      }
 }

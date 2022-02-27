@@ -1,8 +1,8 @@
 const AppUsers = require( "../models/appUsers" );
 const Categories = require("../models/categories");
 const Items = require("../models/items");
-
 const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 
 exports.getSignup = (req, res, next)=>{
      res.render("auth/sign-up");
@@ -17,10 +17,9 @@ exports.postSignUp = (req, res, next)=>{
      AppUsers.findOne({email: email})
           .then(user =>{
                if(user){
-                    return res.status(200).json({
-                         message: "Email Already Exist!",
-                         error: true
-                    })
+                    const error = new Error('Email Already Exist!');
+                    error.statusCode = 409;
+                    throw error;
                }
                bcrypt.hash(password, 12)
                     .then(hashedPass=>{
@@ -38,10 +37,10 @@ exports.postSignUp = (req, res, next)=>{
                     })
           })
           .catch(err=>{
-               console.log(error);
-               const error = new Error(err);
-               error.httpStatusCode = 500;
-               return next(error);
+               if(!err.statusCode){
+                    err.statusCode = 500;
+               }
+               next(err);
           })
      
 }
@@ -53,25 +52,38 @@ exports.postLogin = (req, res, next)=>{
      AppUsers.findOne({email: email})
           .then(user =>{
                if(!user){
-                    return res.status(200).json({ message : "User Not Found!", error: true});
+                    const error = new Error('A user with this email count not be found!');
+                    error.statusCode = 401;
+                    throw error; 
                }
                loadedUser = user;
-               bcrypt.compare(password, user.password)
-                    .then(isEuqal=>{
-                         if(!isEuqal){
-                              return res.status(200).json({ message : "Incorret Password!", error: true});
-                         }
-                         res.status(200).json({
-                              userId: loadedUser._id.toString(),
-                              name: loadedUser.name,
-                              email: loadedUser.email
-                         })
-                    })
+               return bcrypt.compare(password, user.password);
+          })
+          .then(isEuqal=>{
+               if(!isEuqal){
+                    const error = new Error('Incorret Password!');
+                    error.statusCode = 401;
+                    throw error; 
+               }
+               const token = jwt.sign({
+                    email: loadedUser.email,
+                    userId: loadedUser._id.toString()
+               },
+               'thisissupersecretforjsonwebtoken',
+               {expiresIn: '1h'}
+               );
+               res.status(200).json({
+                    token: token,
+                    userId: loadedUser._id.toString(),
+                    name: loadedUser.name,
+                    email: loadedUser.email
+               })
           })
           .catch(err =>{
-               const error = new Error(err);
-               error.httpStatusCode = 500;
-               return next(error);
+               if(!err.statusCode){
+                    err.statusCode = 500;
+               }
+               next(err);
           });
 
 }
@@ -83,7 +95,9 @@ exports.getUser = async (req, res, next)=>{
      try{
           let user = await AppUsers.findById(uId);
                if(!user){
-                    return res.status(200).json({ message : "User Not Found!", error: true});
+                    const error = new Error('User Not found!');
+                    error.statusCode = 404;
+                    throw error; 
                }
           let items = await Items.find({userId: uId}).populate('categoryId').sort({createdAt: -1});
           let categories = await Categories.find();
@@ -98,9 +112,10 @@ exports.getUser = async (req, res, next)=>{
                })
           
      }catch(err){
-          const error = new Error(err);
-          error.httpStatusCode = 500;
-          return next(error);
+          if(!err.statusCode){
+               err.statusCode = 500;
+          }
+          next(err);
      }
 }
 
@@ -113,7 +128,9 @@ exports.postEditUser = async (req, res, next)=>{
      try{
           let user = await AppUsers.findById(userId);
                if(!user){
-                    return res.status(200).json({ message: "User Not Exist!" });
+                    const error = new Error('User Not found!');
+                    error.statusCode = 404;
+                    throw error;
                }
                if(user._id.toString() === userId.toString()){
                     let hashedPass = await bcrypt.hash(updatedPassword, 12);
@@ -126,12 +143,15 @@ exports.postEditUser = async (req, res, next)=>{
                               message : "Update Success"
                          })
                }else{
-                    res.status(200).json({ message: "Not Authorized!"});
+                    const error = new Error('Not Authorized!');
+                    error.statusCode = 403;
+                    throw error;
                }
      }catch(err){
-          const error = new Error(err);
-          error.httpStatusCode = 500;
-          return next(error);
+          if(!err.statusCode){
+               err.statusCode = 500;
+          }
+          next(err);
      }
 
 }
@@ -148,9 +168,10 @@ exports.getAllUserId = (req, res, next)=>{
                })
           })
           .catch(err => {
-               const error = new Error(err);
-               error.httpStatusCode = 500;
-               return next(error);
+               if(!err.statusCode){
+                    err.statusCode = 500;
+               }
+               next(err);
           });
 }
 
@@ -162,8 +183,9 @@ exports.getAllUser = (req, res, next)=>{
                })
           })
           .catch(err => {
-               const error = new Error(err);
-               error.httpStatusCode = 500;
-               return next(error);
+               if(!err.statusCode){
+                    err.statusCode = 500;
+               }
+               next(err);
           });
 }
