@@ -7,13 +7,13 @@ const cpUpload = require("../middleware/multer");
 const isJwt = require("../middleware/is-jwt");
 
 /* Get All Categories */
-router.get("/categories", isJwt, appUserPostController.getCategories);
+router.get("/categories", appUserPostController.getCategories);
 
 /* Get One Category and it's items */
-router.get("/category/:cateId", isJwt, appUserPostController.getCategoryItems);
+router.get("/category/:cateId", appUserPostController.getCategoryItems);
 
 /* Get Posts */
-router.get("/posts", isJwt, appUserPostController.getPosts);
+router.get("/posts", appUserPostController.getPosts);
 
 /* Get Post and Post's comment */
 router.get("/post/:pId", isJwt, appUserPostController.getPost);
