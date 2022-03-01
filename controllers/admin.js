@@ -384,6 +384,7 @@ exports.getItemDetail = async (req, res, next)=>{
                     user : req.user.name,
                     userInfo: req.user,
                     editing : false,
+                    
                     path: '',
                     comments: comments,
                     time: time,

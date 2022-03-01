@@ -196,16 +196,17 @@ exports.getUserPostDetail = async(req, res, next)=>{
      const postId = req.params.postId;
 
      try{
-          let post = await Items.findById(postId);
+          let item = await Items.findById(postId);
           let comments = await Comments.find({itemId: postId});
 
-          // console.log(post);
+          // console.log(item.userId.toString());
           // console.log(comments);
 
           res.status(200).json({
                message : "User's Post Detail",
-               post: post,
-               comments: comments
+               post: item,
+               comments: comments,
+               userId: item.userId.toString()
           });
      }catch(err){
           if(!err.statusCode){
