@@ -193,7 +193,6 @@ exports.getAllUser = (req, res, next)=>{
 }
 
 exports.getUserPostDetail = async(req, res, next)=>{
-     const userId = req.params.userId;
      const postId = req.params.postId;
 
      try{

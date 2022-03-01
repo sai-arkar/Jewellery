@@ -15,7 +15,7 @@ router.post("/auth/login", apiControllers.postLogin);
 router.get("/user/:uid", isJwt, apiControllers.getUser);
 
 /* User' Post Detail and Comment */
-router.get("/user/post/:userId/:postId", isJwt, apiControllers.getUserPostDetail);
+router.get("/user/post/:postId", isJwt, apiControllers.getUserPostDetail);
 
 /* Edit User */
 router.post("/edit-user", isJwt, apiControllers.postEditUser);
