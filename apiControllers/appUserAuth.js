@@ -1,6 +1,8 @@
 const AppUsers = require( "../models/appUsers" );
 const Categories = require("../models/categories");
 const Items = require("../models/items");
+const Comments = require("../models/comments");
+
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
@@ -188,4 +190,29 @@ exports.getAllUser = (req, res, next)=>{
                }
                next(err);
           });
+}
+
+exports.getUserPostDetail = async(req, res, next)=>{
+     const userId = req.params.userId;
+     const postId = req.params.postId;
+
+     try{
+          let post = await Items.findById(postId);
+          let comments = await Comments.find({itemId: postId});
+
+          // console.log(post);
+          // console.log(comments);
+
+          res.status(200).json({
+               message : "User's Post Detail",
+               post: post,
+               comments: comments
+          });
+     }catch(err){
+          if(!err.statusCode){
+               err.statusCode = 500;
+          }
+          next(err);
+     }
+
 }
