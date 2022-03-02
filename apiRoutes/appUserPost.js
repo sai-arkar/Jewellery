@@ -16,7 +16,7 @@ router.get("/category/:cateId", appUserPostController.getCategoryItems);
 router.get("/posts", appUserPostController.getPosts);
 
 /* Get Post and Post's comment */
-router.get("/post/:pId", isJwt, appUserPostController.getPost);
+router.get("/post/:pId", appUserPostController.getPost);
 
 /* Add Post */
 router.post("/post", isJwt, cpUpload, appUserPostController.createPost);
