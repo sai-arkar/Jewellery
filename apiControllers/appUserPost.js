@@ -331,3 +331,69 @@ exports.postComment = async (req, res, next)=>{
           next(err);
      }
 }
+
+exports.deleteComment = async (req, res, next)=>{
+     const cId = req.params.cId;
+     const uId = req.params.uId;
+
+     try{
+          let comment = await Comments.findById(cId);
+               if(comment.userId.toString() === uId.toString() ||
+               req.user._id.toString() === "62031c692c2300baf01541f2"){
+                    
+                    await Comments.deleteOne({_id: cId})
+                              console.log("Delete Comment");
+                              res.status(200).json({
+                                   message: "Success"
+                              })
+               }else{
+                    const error = new Error('Not Authorized!');
+                    error.statusCode = 403;
+                    throw error;
+               }
+     }catch(err){
+          if(!err.statusCode){
+               err.statusCode = 500;
+          }
+          next(err);
+     }
+
+}
+
+exports.postEditComment = async (req, res, next)=>{
+     const cId = req.body.cId;
+     const userId = req.body.userId;
+     const updatedComment = req.body.comment;
+
+     try{
+          let result = await Comments.findById(cId); 
+               if(!result){
+                    const error = new Error('Comment Not Found!');
+                    error.statusCode = 404;
+                    throw error;
+               }
+               if(result.userId.toString() === userId.toString() ||
+               req.user._id.toString() === "62031c692c2300baf01541f2"){
+                    
+                    result.comment = updatedComment;
+                    await result.save();
+                    console.log("Updated Comment");
+                    res.status(201).json({
+                         message: "Success", 
+                         comment: result
+                    })
+
+               }else{
+                    const error = new Error('Not Authorized!');
+                    error.statusCode = 403;
+                    throw error;
+               }
+
+
+     }catch(err){
+          if(!err.statusCode){
+               err.statusCode = 500;
+          }
+          next(err);
+     }
+}

@@ -37,7 +37,14 @@ router.get('/all-items', isAuth, adminControllers.getAllItems);
 /* Item Details */
 router.get('/items/:itemId', isAuth, adminControllers.getItemDetail);
 
+/* Add Comment*/
 router.post("/comment", isAuth, adminControllers.postComment);
+
+/* Delete Comment */ 
+router.delete("/comment/:uId/:cId", isAuth, adminControllers.deleteComment);
+
+/* Edit Comment */
+router.post("/edit-comment", isAuth, adminControllers.postEditComment);
 
 /* Edit Item */
 router.get('/edit-item/:itemId', isAuth, adminControllers.getEditItem);

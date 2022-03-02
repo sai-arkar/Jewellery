@@ -321,7 +321,7 @@ exports.getApprovedItems = async(req, res, next)=>{
                          getItems.push(item);
                     }
                })
-               console.log(getItems);
+               // console.log(getItems);
                
           let cateResult = await Categories.find();
                res.status(201).render('admin/approved-items', {
@@ -417,6 +417,63 @@ exports.postComment = async (req, res, next)=>{
           error.httpStatusCode = 500;
           return next(error);
      }
+}
+
+exports.deleteComment = async(req, res, next)=>{
+     const cId = req.params.cId;
+     const uId = req.params.uId;
+
+     try{
+          let comment = await Comments.findById(cId)
+               if(comment.userId.toString() === uId.toString() ||
+               req.user._id.toString() === "62031c692c2300baf01541f2"){
+                    
+                    await Comments.deleteOne({_id: cId})
+                              console.log("Delete Comment");
+                              res.status(200).json({
+                                   message: "Success",
+                              })
+               }else{
+                    console.log("Not Authorized!");
+               }
+     }catch(err){
+          const error = new Error(err);
+          error.httpStatusCode = 500;
+          return next(error);
+     }
+}
+
+exports.postEditComment = async (req, res, next)=>{
+     const cId = req.body.cId;
+     const userId = req.body.userId;
+     const itemId = req.body.itemId;
+     const updatedComment = req.body.comment;
+
+     try{
+          let result = await Comments.findById(cId); 
+               if(!result){
+                    return res.redirect("/admin/items/"+itemId);
+               }
+               if(result.userId.toString() === userId.toString() ||
+               req.user._id.toString() === "62031c692c2300baf01541f2"){
+                    
+                    result.comment = updatedComment;
+                    await result.save();
+                    console.log("Updated Comment");
+                    res.redirect("/admin/items/"+itemId);
+
+               }else{
+                    console.log("Not Authorized!");
+                    res.redirect("/admin/items/"+itemId);
+               }
+
+
+     }catch(err){
+          const error = new Error(err);
+          error.httpStatusCode = 500;
+          return next(error);
+     }
+
 }
 
 exports.getEditItem = async (req, res, next)=>{

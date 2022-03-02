@@ -1,0 +1,42 @@
+<div class="typing " id="">
+
+                    <div class="mb-1 comment__box">
+
+                      <% if(comments.length > 0){%>
+                        <% for(let comment of comments) {%>
+                          <!-- Start One Comment -->
+                      <div class="bg-gradient-light bg-opacity-10 border-radius-lg border-0  mt-2">
+                        <div class="flex-grow-1 ms-3">
+                          <h6 class="h5 mt-0"><%= comment.name %></h6>
+                          <p class="text-sm"><%= comment.comment %></p>
+
+                          <button class="btn">Delete</button>
+                          <div class="d-flex">
+                            <small><%= time %></small>
+                           </div>
+                        </div>
+                      </div>
+                      <!-- End One Comment -->
+                        <% } %>
+                      <% } %>
+
+                    </div>
+                  </div>
+
+                    <form action="/admin/comment" method="post">
+                      <div class="d-flex mt-4">
+                        <div class="flex-shrink-0">
+                          <img alt="Image placeholder" class="avatar rounded-circle me-3" src="/img/team-4.jpg">
+                        </div>
+                        <div class="flex-grow-1 my-auto">
+                          <div class="input-group input-group-static">
+                            <textarea id="textarea" class="form-control" placeholder="Write your comment" rows="4" spellcheck="false" name="comment"></textarea>
+                          </div>
+                        </div>
+                        <input class="itemId" type="hidden" name="itemId" value="<%= item._id %>">
+                        <input class="username" type="hidden" name="username" value="<%= userInfo.name %>">
+                        
+  
+                        <button type="submit" id="submitBtn" class="btn bg-gradient-primary btn-sm mt-auto mb-0 ms-2"  name="button"><i class="material-icons text-sm">send</i></button>
+                      </div>
+                    </form>

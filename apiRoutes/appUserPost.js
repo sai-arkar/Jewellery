@@ -30,6 +30,10 @@ router.post("/edit-post", isJwt, cpUpload, appUserPostController.editPost);
 /* Comment */
 router.post("/comment", isJwt, appUserPostController.postComment);
 
+router.delete("/comment/:uId/:cId", isJwt, appUserPostController.deleteComment);
+
+router.post("/edit-comment", isJwt, appUserPostController.postEditComment);
+
 /* Delete Post */
 router.delete("/post/:postId/:userId", isJwt, appUserPostController.deletePost);
 
