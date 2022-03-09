@@ -727,7 +727,7 @@ exports.getRole = async (req, res, next)=>{
 }
 
 exports.getTestDatatable = (req, res, next)=>{
-     res.status(300).render('admin/test-datatable');
+     res.status(200).render('admin/test-datatable');
 }
 
 exports.getEditRole = async (req, res, next)=>{

@@ -2,6 +2,7 @@ const Posts = require("../models/items");
 const Categories = require("../models/categories");
 const Comments = require("../models/comments");
 const fileHelper = require("../middleware/file");
+const moment = require("moment");
 
 let approvedPosts = []; /* To Store All Post for Pagination */
 let relatedImageArr = [];
@@ -94,6 +95,7 @@ exports.getPost = async (req, res, next)=>{
      try{
           let post = await Posts.findById(pId).populate('categoryId');
           let comments = await Comments.find({itemId: pId});
+          
                if(!post){
                     const error = new Error('Post Not Found');
                     error.statusCode = 404;

@@ -34,7 +34,7 @@ router.delete("/comment/:uId/:cId", isJwt, appUserPostController.deleteComment);
 
 router.post("/edit-comment", isJwt, appUserPostController.postEditComment);
 
-/* Delete Post */
+/* Delete Post and Post Comments */
 router.delete("/post/:postId/:userId", isJwt, appUserPostController.deletePost);
 
 module.exports = router;
